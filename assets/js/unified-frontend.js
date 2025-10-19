@@ -74,6 +74,7 @@ const GrantInsight = {
             this.setupPerformance();
             this.setupAnimations();
             this.setupForms();
+            this.setupScrollRestoration(); // スクロール位置の復元
             
             this.initialized = true;
             this.debug('Grant Insight initialized successfully');
@@ -394,13 +395,16 @@ cacheElements() {
     },
 
     /**
-     * 検索実行
+     * 検索実行 - スクロール位置を保存
      */
     executeSearch(query) {
         const input = this.elements.searchInputs[0];
         if (input) {
             input.value = query;
         }
+        
+        // 現在のスクロール位置を保存
+        window.history.replaceState({ scrollY: window.scrollY }, '', window.location.href);
         
         // 検索結果ページに移動またはAJAXで結果更新
         const currentPath = window.location.pathname;
@@ -537,7 +541,7 @@ cacheElements() {
     },
 
     /**
-     * URLの更新（履歴管理）
+     * URLの更新（履歴管理）- スクロール位置を保存
      */
     updateURL(filters) {
         const params = new URLSearchParams();
@@ -549,7 +553,10 @@ cacheElements() {
         });
         
         const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
-        window.history.pushState({}, '', newUrl);
+        
+        // スクロール位置を保存してから履歴を更新
+        const scrollPosition = window.scrollY;
+        window.history.pushState({ scrollY: scrollPosition }, '', newUrl);
     },
 
     /**
@@ -1634,6 +1641,94 @@ cacheElements() {
         document.querySelectorAll('.gi-modal-active, .gi-popup-active').forEach(modal => {
             modal.classList.remove('gi-modal-active', 'gi-popup-active');
         });
+    },
+
+    /**
+     * ==========================================================================
+     * スクロール位置の保存と復元（戻るボタン対応）
+     * ==========================================================================
+     */
+    setupScrollRestoration() {
+        // ページ読み込み時にスクロール位置を復元
+        if (window.history.scrollRestoration) {
+            window.history.scrollRestoration = 'manual';
+        }
+
+        // 前回のスクロール位置を復元
+        const restoreScroll = () => {
+            const state = window.history.state;
+            if (state && typeof state.scrollY === 'number') {
+                // スムーズにスクロール
+                window.scrollTo({
+                    top: state.scrollY,
+                    behavior: 'instant' // 即座に復元
+                });
+                this.debug(`Scroll restored to: ${state.scrollY}px`);
+            }
+        };
+
+        // 初回読み込み時の復元
+        window.addEventListener('load', restoreScroll);
+
+        // 戻る/進むボタンでの復元
+        window.addEventListener('popstate', (e) => {
+            if (e.state && typeof e.state.scrollY === 'number') {
+                setTimeout(() => {
+                    window.scrollTo({
+                        top: e.state.scrollY,
+                        behavior: 'instant'
+                    });
+                    this.debug(`Scroll restored via popstate to: ${e.state.scrollY}px`);
+                }, 50); // 少し遅延させて確実に復元
+            }
+        });
+
+        // ページ遷移前にスクロール位置を保存
+        window.addEventListener('beforeunload', () => {
+            const currentScrollY = window.scrollY;
+            if (window.history.state) {
+                window.history.replaceState(
+                    { ...window.history.state, scrollY: currentScrollY },
+                    '',
+                    window.location.href
+                );
+            } else {
+                window.history.replaceState(
+                    { scrollY: currentScrollY },
+                    '',
+                    window.location.href
+                );
+            }
+            this.debug(`Scroll position saved: ${currentScrollY}px`);
+        });
+
+        // リンククリック時にスクロール位置を保存
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('a[href]');
+            if (link && !link.hasAttribute('target') && !link.getAttribute('href').startsWith('#')) {
+                const href = link.getAttribute('href');
+                // 内部リンクの場合のみ
+                if (href.startsWith('/') || href.startsWith(window.location.origin)) {
+                    const currentScrollY = window.scrollY;
+                    if (window.history.state) {
+                        window.history.replaceState(
+                            { ...window.history.state, scrollY: currentScrollY },
+                            '',
+                            window.location.href
+                        );
+                    } else {
+                        window.history.replaceState(
+                            { scrollY: currentScrollY },
+                            '',
+                            window.location.href
+                        );
+                    }
+                    this.debug(`Scroll position saved before navigation: ${currentScrollY}px`);
+                }
+            }
+        });
+
+        this.debug('Scroll restoration initialized');
     }
 };
 
