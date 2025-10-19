@@ -847,9 +847,11 @@
         <div class="stylish-header-inner">
             <!-- Logo -->
             <a href="<?php echo esc_url(home_url('/')); ?>" class="stylish-logo">
-                <img src="http://joseikin-insight.com/wp-content/uploads/2025/09/名称未設定のデザイン.png" 
+                <img src="https://joseikin-insight.com/wp-content/uploads/2025/09/名称未設定のデザイン.png" 
                      alt="<?php bloginfo('name'); ?>" 
                      class="stylish-logo-image"
+                     width="200"
+                     height="60"
                      loading="eager">
                 
                 <div class="stylish-logo-text">

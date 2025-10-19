@@ -141,30 +141,271 @@ if (function_exists('update_post_meta')) {
     update_post_meta($post_id, 'views_count', $new_views);
     $grant_data['views_count'] = $new_views;
 }
+
+// SEO: OGP画像取得
+$og_image = '';
+if (has_post_thumbnail($post_id)) {
+    $og_image = get_the_post_thumbnail_url($post_id, 'large');
+} else {
+    $og_image = get_site_icon_url(512);
+    if (empty($og_image)) {
+        $og_image = home_url('/wp-content/uploads/default-og-image.jpg');
+    }
+}
+
+// SEO: キーワード生成
+$keywords = array();
+if (!empty($taxonomies['categories'])) {
+    foreach ($taxonomies['categories'] as $cat) {
+        $keywords[] = $cat->name;
+    }
+}
+if (!empty($taxonomies['prefectures'])) {
+    foreach ($taxonomies['prefectures'] as $pref) {
+        $keywords[] = $pref->name;
+    }
+}
+if (!empty($taxonomies['tags'])) {
+    foreach ($taxonomies['tags'] as $tag) {
+        $keywords[] = $tag->name;
+    }
+}
+$keywords[] = '助成金';
+$keywords[] = '補助金';
+$keywords_string = implode(', ', array_unique($keywords));
+
+// SEO: 投稿日時
+$published_time = get_the_date('c', $post_id);
+$modified_time = get_the_modified_date('c', $post_id);
+
+// SEO: サイト情報
+$site_name = get_bloginfo('name');
+$site_url = home_url('/');
 ?>
 
-<!-- SEO Meta -->
+<!-- ============================================
+     完璧なSEOメタタグ実装
+     ============================================ -->
+
+<!-- 基本メタタグ -->
+<title><?php echo esc_html($seo_title); ?> | <?php echo esc_html($site_name); ?></title>
 <meta name="description" content="<?php echo esc_attr($seo_description); ?>">
+<meta name="keywords" content="<?php echo esc_attr($keywords_string); ?>">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="author" content="<?php echo esc_attr($site_name); ?>">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="canonical" href="<?php echo esc_url($canonical_url); ?>">
 
-<!-- 構造化データ -->
+<!-- Open Graph Protocol (Facebook, LINE等) -->
+<meta property="og:type" content="article">
+<meta property="og:title" content="<?php echo esc_attr($seo_title); ?>">
+<meta property="og:description" content="<?php echo esc_attr($seo_description); ?>">
+<meta property="og:url" content="<?php echo esc_url($canonical_url); ?>">
+<meta property="og:image" content="<?php echo esc_url($og_image); ?>">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="<?php echo esc_attr($site_name); ?>">
+<meta property="og:locale" content="ja_JP">
+<meta property="article:published_time" content="<?php echo esc_attr($published_time); ?>">
+<meta property="article:modified_time" content="<?php echo esc_attr($modified_time); ?>">
+<meta property="article:author" content="<?php echo esc_attr($site_name); ?>">
+<?php if (!empty($taxonomies['categories'])): ?>
+<meta property="article:section" content="<?php echo esc_attr($taxonomies['categories'][0]->name); ?>">
+<?php endif; ?>
+<?php if (!empty($taxonomies['tags'])): foreach ($taxonomies['tags'] as $tag): ?>
+<meta property="article:tag" content="<?php echo esc_attr($tag->name); ?>">
+<?php endforeach; endif; ?>
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="<?php echo esc_attr($seo_title); ?>">
+<meta name="twitter:description" content="<?php echo esc_attr($seo_description); ?>">
+<meta name="twitter:image" content="<?php echo esc_url($og_image); ?>">
+<meta name="twitter:url" content="<?php echo esc_url($canonical_url); ?>">
+
+<!-- パフォーマンス最適化 -->
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="dns-prefetch" href="//fonts.gstatic.com">
+
+<!-- ============================================
+     構造化データ（JSON-LD）- 完全実装
+     ============================================ -->
+
+<!-- Article スキーマ（記事として） -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "<?php echo esc_js($seo_title); ?>",
+  "description": "<?php echo esc_js($seo_description); ?>",
+  "image": "<?php echo esc_js($og_image); ?>",
+  "datePublished": "<?php echo esc_js($published_time); ?>",
+  "dateModified": "<?php echo esc_js($modified_time); ?>",
+  "author": {
+    "@type": "Organization",
+    "name": "<?php echo esc_js($site_name); ?>",
+    "url": "<?php echo esc_js($site_url); ?>"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "<?php echo esc_js($site_name); ?>",
+    "url": "<?php echo esc_js($site_url); ?>",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "<?php echo esc_js(get_site_icon_url(512) ?: $og_image); ?>"
+    }
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "<?php echo esc_js($canonical_url); ?>"
+  }<?php if (!empty($keywords_string)): ?>,
+  "keywords": "<?php echo esc_js($keywords_string); ?>"
+  <?php endif; ?>
+}
+</script>
+
+<!-- MonetaryGrant スキーマ（助成金として） -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "MonetaryGrant",
+  "name": "<?php echo esc_js($seo_title); ?>",
+  "description": "<?php echo esc_js($seo_description); ?>",
+  "url": "<?php echo esc_js($canonical_url); ?>"<?php if ($grant_data['organization']): ?>,
+  "funder": {
+    "@type": "Organization",
+    "name": "<?php echo esc_js($grant_data['organization']); ?>"
+  }<?php endif; ?><?php if ($max_amount_yen > 0): ?>,
+  "maximumAmount": {
+    "@type": "MonetaryAmount",
+    "currency": "JPY",
+    "value": <?php echo intval($max_amount_yen); ?>
+  }<?php endif; ?><?php if (!empty($grant_data['deadline_date'])): ?>,
+  "applicationDeadline": "<?php echo esc_js(date('c', strtotime($grant_data['deadline_date']))); ?>"<?php endif; ?><?php if (!empty($grant_data['grant_target'])): ?>,
+  "eligibilityCriteria": "<?php echo esc_js(wp_trim_words(strip_tags($grant_data['grant_target']), 30, '...')); ?>"<?php endif; ?>
+}
+</script>
+
+<!-- GovernmentService スキーマ（政府サービスとして） -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "GovernmentService",
   "name": "<?php echo esc_js($seo_title); ?>",
   "description": "<?php echo esc_js($seo_description); ?>",
-  "url": "<?php echo esc_js($canonical_url); ?>",
-  <?php if ($grant_data['organization']): ?>
+  "url": "<?php echo esc_js($canonical_url); ?>"<?php if ($grant_data['organization']): ?>,
   "provider": {
     "@type": "GovernmentOrganization",
     "name": "<?php echo esc_js($grant_data['organization']); ?>"
-  },
-  <?php endif; ?>
-  <?php if ($grant_data['official_url']): ?>
-  "serviceUrl": "<?php echo esc_js($grant_data['official_url']); ?>",
-  <?php endif; ?>
-  "areaServed": "JP"
+  }<?php endif; ?><?php if ($grant_data['official_url']): ?>,
+  "serviceUrl": "<?php echo esc_js($grant_data['official_url']); ?>"<?php endif; ?>,
+  "areaServed": {
+    "@type": "Country",
+    "name": "日本"<?php if (!empty($taxonomies['prefectures'])): foreach ($taxonomies['prefectures'] as $pref): ?>,
+    "containsPlace": {
+      "@type": "AdministrativeArea",
+      "name": "<?php echo esc_js($pref->name); ?>"
+    }<?php break; endforeach; endif; ?>
+  }<?php if (!empty($grant_data['contact_info'])): ?>,
+  "availableChannel": {
+    "@type": "ServiceChannel",
+    "servicePhone": {
+      "@type": "ContactPoint",
+      "contactType": "Customer Service"
+    }
+  }<?php endif; ?>
+}
+</script>
+
+<!-- BreadcrumbList スキーマ（パンくずリスト） -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "ホーム",
+      "item": "<?php echo esc_js($site_url); ?>"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "助成金一覧",
+      "item": "<?php echo esc_js($site_url); ?>grant/"
+    }<?php if (!empty($taxonomies['categories'])): ?>,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "<?php echo esc_js($taxonomies['categories'][0]->name); ?>",
+      "item": "<?php echo esc_js(get_term_link($taxonomies['categories'][0])); ?>"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "<?php echo esc_js($seo_title); ?>",
+      "item": "<?php echo esc_js($canonical_url); ?>"
+    }<?php else: ?>,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "<?php echo esc_js($seo_title); ?>",
+      "item": "<?php echo esc_js($canonical_url); ?>"
+    }<?php endif; ?>
+  ]
+}
+</script>
+
+<!-- FAQPage スキーマ（よくある質問） -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    <?php if (!empty($grant_data['deadline_date']) || !empty($grant_data['deadline'])): ?>
+    {
+      "@type": "Question",
+      "name": "この助成金の申請締切はいつですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "申請締切は<?php echo esc_js($deadline_info ?: '未定'); ?>です。締切日を過ぎると応募できませんので、お早めにご準備ください。"
+      }
+    }<?php if ($formatted_amount || $grant_data['organization'] || $grant_data['adoption_rate'] > 0): ?>,<?php endif; ?>
+    <?php endif; ?>
+    <?php if ($formatted_amount): ?>
+    {
+      "@type": "Question",
+      "name": "最大助成額はいくらですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "この助成金の最大助成額は<?php echo esc_js($formatted_amount); ?>です<?php if ($grant_data['subsidy_rate']): ?>。補助率は<?php echo esc_js($grant_data['subsidy_rate']); ?>となっています<?php endif; ?>。"
+      }
+    }<?php if ($grant_data['organization'] || $grant_data['adoption_rate'] > 0): ?>,<?php endif; ?>
+    <?php endif; ?>
+    <?php if ($grant_data['organization']): ?>
+    {
+      "@type": "Question",
+      "name": "この助成金はどこが実施していますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "<?php echo esc_js($grant_data['organization']); ?>が実施している助成金です。"
+      }
+    }<?php if ($grant_data['adoption_rate'] > 0): ?>,<?php endif; ?>
+    <?php endif; ?>
+    <?php if ($grant_data['adoption_rate'] > 0): ?>
+    {
+      "@type": "Question",
+      "name": "採択率はどのくらいですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "この助成金の採択率は約<?php echo number_format($grant_data['adoption_rate'], 1); ?>%です。難易度は<?php echo esc_js($difficulty_data['label']); ?>レベルとなっています。"
+      }
+    }
+    <?php endif; ?>
+  ]
 }
 </script>
 
@@ -787,6 +1028,119 @@ if (function_exists('update_post_meta')) {
         background: var(--gus-white);
     }
 }
+
+/* ============================================
+   内部リンク・関連コンテンツスタイル
+   ============================================ */
+
+.gus-related-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.gus-related-card:hover {
+    border-color: var(--gus-gray-600);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.gus-related-card h3 a:hover {
+    color: var(--gus-gray-700);
+    text-decoration: underline;
+}
+
+.gus-breadcrumb a:hover {
+    color: var(--gus-black);
+    text-decoration: underline;
+}
+
+/* ============================================
+   アクセシビリティ強化
+   ============================================ */
+
+/* フォーカス状態の明確化 */
+a:focus-visible,
+button:focus-visible,
+.gus-btn:focus-visible,
+.gus-tag:focus-visible {
+    outline: 2px solid var(--gus-yellow);
+    outline-offset: 2px;
+}
+
+/* タップターゲットサイズ（WCAG 2.1準拠） */
+.gus-btn,
+.gus-tag,
+.gus-related-card a,
+.gus-breadcrumb a {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* スクリーンリーダー用のスキップリンク */
+.skip-to-content {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--gus-yellow);
+    color: var(--gus-black);
+    padding: 8px;
+    text-decoration: none;
+    z-index: 100;
+}
+
+.skip-to-content:focus {
+    top: 0;
+}
+
+/* 画像遅延ロード対応 */
+img[loading="lazy"] {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+img[loading="lazy"].loaded {
+    opacity: 1;
+}
+
+/* モーション削減対応（アクセシビリティ） */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ハイコントラストモード対応 */
+@media (prefers-contrast: high) {
+    :root {
+        --gus-gray-300: #000000;
+        --gus-gray-600: #000000;
+    }
+    
+    .gus-btn-primary,
+    .gus-status-badge {
+        border: 2px solid currentColor;
+    }
+}
+
+/* レスポンシブ調整 - 関連コンテンツ */
+@media (max-width: 768px) {
+    .gus-related-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .gus-breadcrumb ol {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .gus-breadcrumb li span {
+        display: none;
+    }
+}
 </style>
 
 <main class="gus-single">
@@ -1066,6 +1420,142 @@ if (function_exists('update_post_meta')) {
             <?php endif; ?>
         </aside>
     </div>
+    
+    <!-- ============================================
+         内部リンク戦略: 関連助成金セクション
+         ============================================ -->
+    <?php
+    // 関連助成金取得（同じカテゴリー）
+    $related_args = array(
+        'post_type' => 'grant',
+        'posts_per_page' => 4,
+        'post__not_in' => array($post_id),
+        'post_status' => 'publish',
+        'orderby' => 'rand',
+    );
+    
+    if (!empty($taxonomies['categories'])) {
+        $related_args['tax_query'] = array(
+            array(
+                'taxonomy' => 'grant_category',
+                'field' => 'term_id',
+                'terms' => $taxonomies['categories'][0]->term_id,
+            ),
+        );
+    }
+    
+    $related_query = new WP_Query($related_args);
+    
+    if ($related_query->have_posts()) :
+    ?>
+    <section class="gus-related-section" style="margin-top: 40px; padding-top: 40px; border-top: 2px solid var(--gus-gray-300);">
+        <h2 class="gus-section-title" style="font-size: var(--gus-text-xl); font-weight: 700; margin-bottom: var(--gus-space-lg); display: flex; align-items: center; gap: var(--gus-space-sm);">
+            <span class="gus-icon gus-icon-document"></span>
+            関連する助成金
+        </h2>
+        <div class="gus-related-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--gus-space-lg);">
+            <?php while ($related_query->have_posts()) : $related_query->the_post(); ?>
+            <article class="gus-related-card" style="background: var(--gus-gray-50); border: 1px solid var(--gus-gray-300); border-radius: var(--gus-radius); padding: var(--gus-space-md); transition: var(--gus-transition);">
+                <h3 style="font-size: var(--gus-text-md); font-weight: 700; margin-bottom: var(--gus-space-sm); line-height: 1.4;">
+                    <a href="<?php the_permalink(); ?>" style="color: var(--gus-black); text-decoration: none;" aria-label="<?php echo esc_attr(get_the_title() . 'の詳細を見る'); ?>">
+                        <?php the_title(); ?>
+                    </a>
+                </h3>
+                <?php
+                $related_max_amount = function_exists('get_field') ? get_field('max_amount', get_the_ID()) : '';
+                $related_deadline = function_exists('get_field') ? get_field('deadline', get_the_ID()) : '';
+                ?>
+                <?php if ($related_max_amount || $related_deadline): ?>
+                <div style="font-size: var(--gus-text-sm); color: var(--gus-gray-600); margin-bottom: var(--gus-space-sm);">
+                    <?php if ($related_max_amount): ?>
+                    <div><strong>最大:</strong> <?php echo esc_html($related_max_amount); ?></div>
+                    <?php endif; ?>
+                    <?php if ($related_deadline): ?>
+                    <div><strong>締切:</strong> <?php echo esc_html($related_deadline); ?></div>
+                    <?php endif; ?>
+                </div>
+                <?php endif; ?>
+                <a href="<?php the_permalink(); ?>" class="gus-btn gus-btn-secondary" style="margin-top: auto; font-size: var(--gus-text-sm); padding: 8px 12px;" aria-label="<?php echo esc_attr(get_the_title() . 'の詳細ページへ'); ?>">
+                    詳細を見る →
+                </a>
+            </article>
+            <?php endwhile; ?>
+        </div>
+    </section>
+    <?php
+    endif;
+    wp_reset_postdata();
+    ?>
+    
+    <!-- ============================================
+         内部リンク戦略: カテゴリー・地域リンク
+         ============================================ -->
+    <section class="gus-taxonomy-links" style="margin-top: 40px; padding: var(--gus-space-lg); background: var(--gus-gray-50); border: 1px solid var(--gus-gray-300); border-radius: var(--gus-radius);">
+        <h2 class="gus-section-title" style="font-size: var(--gus-text-lg); font-weight: 700; margin-bottom: var(--gus-space-md);">
+            この助成金のカテゴリー・地域
+        </h2>
+        
+        <div style="display: grid; gap: var(--gus-space-md);">
+            <?php if (!empty($taxonomies['categories'])): ?>
+            <div>
+                <div class="gus-tags-label" style="font-size: var(--gus-text-xs); color: var(--gus-gray-600); font-weight: 600; margin-bottom: var(--gus-space-xs); text-transform: uppercase;">カテゴリー</div>
+                <div style="display: flex; flex-wrap: wrap; gap: var(--gus-space-sm);">
+                    <?php foreach ($taxonomies['categories'] as $cat): ?>
+                    <a href="<?php echo get_term_link($cat); ?>" class="gus-tag" aria-label="<?php echo esc_attr($cat->name . 'カテゴリーの助成金一覧を見る'); ?>">
+                        <?php echo esc_html($cat->name); ?> の助成金を見る →
+                    </a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+            
+            <?php if (!empty($taxonomies['prefectures'])): ?>
+            <div>
+                <div class="gus-tags-label" style="font-size: var(--gus-text-xs); color: var(--gus-gray-600); font-weight: 600; margin-bottom: var(--gus-space-xs); text-transform: uppercase;">地域</div>
+                <div style="display: flex; flex-wrap: wrap; gap: var(--gus-space-sm);">
+                    <?php foreach ($taxonomies['prefectures'] as $pref): ?>
+                    <a href="<?php echo get_term_link($pref); ?>" class="gus-tag" aria-label="<?php echo esc_attr($pref->name . 'の助成金一覧を見る'); ?>">
+                        <?php echo esc_html($pref->name); ?> の助成金を見る →
+                    </a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+        </div>
+    </section>
+    
+    <!-- ============================================
+         パンくずナビゲーション（視覚的）
+         ============================================ -->
+    <nav class="gus-breadcrumb" aria-label="パンくずナビゲーション" style="margin-top: 40px; padding: var(--gus-space-md); background: var(--gus-white); border: 1px solid var(--gus-gray-300); border-radius: var(--gus-radius);">
+        <ol style="list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: var(--gus-space-sm); font-size: var(--gus-text-sm);">
+            <li style="display: flex; align-items: center;">
+                <a href="<?php echo home_url('/'); ?>" style="color: var(--gus-gray-700); text-decoration: none;" aria-label="ホームに戻る">ホーム</a>
+                <span style="margin: 0 8px; color: var(--gus-gray-500);">›</span>
+            </li>
+            <li style="display: flex; align-items: center;">
+                <a href="<?php echo home_url('/grant/'); ?>" style="color: var(--gus-gray-700); text-decoration: none;" aria-label="助成金一覧ページ">助成金一覧</a>
+                <?php if (!empty($taxonomies['categories'])): ?>
+                <span style="margin: 0 8px; color: var(--gus-gray-500);">›</span>
+            </li>
+            <li style="display: flex; align-items: center;">
+                <a href="<?php echo get_term_link($taxonomies['categories'][0]); ?>" style="color: var(--gus-gray-700); text-decoration: none;" aria-label="<?php echo esc_attr($taxonomies['categories'][0]->name . 'カテゴリー'); ?>">
+                    <?php echo esc_html($taxonomies['categories'][0]->name); ?>
+                </a>
+                <span style="margin: 0 8px; color: var(--gus-gray-500);">›</span>
+            </li>
+            <li style="color: var(--gus-gray-900); font-weight: 600;" aria-current="page">
+                <?php echo esc_html(wp_trim_words($seo_title, 8, '...')); ?>
+            </li>
+                <?php else: ?>
+                <span style="margin: 0 8px; color: var(--gus-gray-500);">›</span>
+            </li>
+            <li style="color: var(--gus-gray-900); font-weight: 600;" aria-current="page">
+                <?php echo esc_html(wp_trim_words($seo_title, 8, '...')); ?>
+            </li>
+                <?php endif; ?>
+        </ol>
+    </nav>
 </main>
 
 <?php get_footer(); ?>

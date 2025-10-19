@@ -1,0 +1,163 @@
+# WordPress Performance Optimization
+# Grant Insight Perfect Theme
+# Version: 9.2.0
+
+# ============================================
+# HTTPS強制リダイレクト
+# ============================================
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# ============================================
+# ブラウザキャッシュ設定
+# ============================================
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    # デフォルト
+    ExpiresDefault "access plus 1 month"
+    
+    # 画像
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+    
+    # CSS/JavaScript
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
+    ExpiresByType application/x-javascript "access plus 1 month"
+    
+    # フォント
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/ttf "access plus 1 year"
+    ExpiresByType font/otf "access plus 1 year"
+    ExpiresByType application/font-woff "access plus 1 year"
+    ExpiresByType application/font-woff2 "access plus 1 year"
+    
+    # その他
+    ExpiresByType application/pdf "access plus 1 month"
+    ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
+# ============================================
+# Cache-Controlヘッダー
+# ============================================
+<IfModule mod_headers.c>
+    # 画像 - 1年間キャッシュ、不変
+    <FilesMatch "\.(jpg|jpeg|png|gif|webp|svg|ico)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    
+    # CSS/JavaScript - 1ヶ月キャッシュ
+    <FilesMatch "\.(css|js)$">
+        Header set Cache-Control "public, max-age=2592000"
+    </FilesMatch>
+    
+    # フォント - 1年間キャッシュ、不変
+    <FilesMatch "\.(woff2|woff|ttf|otf|eot)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+        Header set Access-Control-Allow-Origin "*"
+    </FilesMatch>
+    
+    # HTML - キャッシュしない
+    <FilesMatch "\.(html|htm|php)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires 0
+    </FilesMatch>
+</IfModule>
+
+# ============================================
+# Gzip圧縮
+# ============================================
+<IfModule mod_deflate.c>
+    # テキストベースのファイルを圧縮
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/atom+xml
+    AddOutputFilterByType DEFLATE image/svg+xml
+    
+    # 古いブラウザのバグ対策
+    BrowserMatch ^Mozilla/4 gzip-only-text/html
+    BrowserMatch ^Mozilla/4\.0[678] no-gzip
+    BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+    
+    # プロキシサーバーへの適切なヘッダー送信
+    Header append Vary User-Agent env=!dont-vary
+</IfModule>
+
+# ============================================
+# セキュリティヘッダー
+# ============================================
+<IfModule mod_headers.c>
+    # X-Frame-Options（クリックジャッキング対策）
+    Header always set X-Frame-Options "SAMEORIGIN"
+    
+    # X-Content-Type-Options（MIMEタイプスニッフィング対策）
+    Header always set X-Content-Type-Options "nosniff"
+    
+    # X-XSS-Protection（XSS対策）
+    Header always set X-XSS-Protection "1; mode=block"
+    
+    # Referrer-Policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    
+    # Permissions-Policy（旧Feature-Policy）
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+</IfModule>
+
+# ============================================
+# ETags無効化（より良いキャッシュ制御のため）
+# ============================================
+<IfModule mod_headers.c>
+    Header unset ETag
+</IfModule>
+FileETag None
+
+# ============================================
+# ファイルアクセス制限
+# ============================================
+# wp-config.phpへの直接アクセス拒否
+<Files wp-config.php>
+    order allow,deny
+    deny from all
+</Files>
+
+# .htaccessと.htpasswdへのアクセス拒否
+<Files ~ "^\.ht">
+    order allow,deny
+    deny from all
+</Files>
+
+# ============================================
+# WordPress標準の.htaccess設定
+# ============================================
+# BEGIN WordPress
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+</IfModule>
+# END WordPress

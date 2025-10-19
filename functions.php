@@ -63,6 +63,10 @@ $required_files = array(
     'ajax-functions.php',          // AJAX処理
     'ai-functions.php',            // AI機能・検索履歴 (統合済み)
     
+    // Performance optimization
+    'performance-optimization.php', // パフォーマンス最適化（v9.2.0+）
+    'seo-optimization.php',         // SEO最適化（v9.2.1+）
+    
     // Google Sheets integration (consolidated into one file)
     'google-sheets-integration.php', // Google Sheets統合（全機能統合版）
     'safe-sync-manager.php',         // 安全同期管理システム
@@ -2202,6 +2206,80 @@ function gi_load_page_template($template_name, $fallback_title = 'Page') {
         <?php
         get_footer();
     }
+}
+
+/**
+ * Note: AJAX filter functions are defined in inc/ajax-functions.php
+ * - gi_ajax_filter_category_grants()
+ * - gi_ajax_filter_prefecture_grants()
+ * - gi_ajax_filter_municipality_grants()
+ * 
+ * Note: gi_render_grant_card() function is defined in inc/card-display.php
+ * We use the existing functions from those files instead of redefining them here.
+ */
+
+/**
+ * Helper function: Generate pagination HTML
+ * Used by AJAX handlers to create consistent pagination
+ */
+function gi_generate_pagination_html($max_pages, $current_page) {
+    if ($max_pages <= 1) {
+        return '';
+    }
+    
+    ob_start();
+    ?>
+    <div class="pagination-nav">
+        <?php if ($current_page > 1) : ?>
+            <a href="?page=<?php echo ($current_page - 1); ?>" class="pagination-link pagination-prev" aria-label="前のページ">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+                </svg>
+                前へ
+            </a>
+        <?php endif; ?>
+        
+        <div class="pagination-numbers">
+            <?php
+            $range = 2;
+            $start = max(1, $current_page - $range);
+            $end = min($max_pages, $current_page + $range);
+            
+            if ($start > 1) {
+                echo '<a href="?page=1" class="pagination-number">1</a>';
+                if ($start > 2) {
+                    echo '<span class="pagination-dots">...</span>';
+                }
+            }
+            
+            for ($i = $start; $i <= $end; $i++) {
+                if ($i == $current_page) {
+                    echo '<span class="pagination-number active" aria-current="page">' . $i . '</span>';
+                } else {
+                    echo '<a href="?page=' . $i . '" class="pagination-number">' . $i . '</a>';
+                }
+            }
+            
+            if ($end < $max_pages) {
+                if ($end < $max_pages - 1) {
+                    echo '<span class="pagination-dots">...</span>';
+                }
+                echo '<a href="?page=' . $max_pages . '" class="pagination-number">' . $max_pages . '</a>';
+            }
+            ?>
+        </div>
+        
+        <?php if ($current_page < $max_pages) : ?>
+            <a href="?page=<?php echo ($current_page + 1); ?>" class="pagination-link pagination-next" aria-label="次のページ">
+                次へ
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                </svg>
+            </a>
+        <?php endif; ?>
+    </div>
+    <?php
+    return ob_get_clean();
 }
 
 /**
