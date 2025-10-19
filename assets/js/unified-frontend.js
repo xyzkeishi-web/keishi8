@@ -1645,90 +1645,133 @@ cacheElements() {
 
     /**
      * ==========================================================================
-     * スクロール位置の保存と復元（戻るボタン対応）
+     * スクロール位置の保存と復元（戻るボタン対応）- 強化版
      * ==========================================================================
      */
     setupScrollRestoration() {
-        // ページ読み込み時にスクロール位置を復元
-        if (window.history.scrollRestoration) {
+        // ブラウザのデフォルト動作を完全に無効化
+        if ('scrollRestoration' in window.history) {
             window.history.scrollRestoration = 'manual';
         }
 
-        // 前回のスクロール位置を復元
-        const restoreScroll = () => {
-            const state = window.history.state;
-            if (state && typeof state.scrollY === 'number') {
-                // スムーズにスクロール
-                window.scrollTo({
-                    top: state.scrollY,
-                    behavior: 'instant' // 即座に復元
+        // SessionStorageにもバックアップを保存
+        const STORAGE_KEY = 'gi_scroll_positions';
+        
+        // スクロール位置を保存（複数の方法で）
+        const saveScrollPosition = () => {
+            const url = window.location.href;
+            const scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+            
+            // 1. History APIに保存
+            try {
+                const currentState = window.history.state || {};
+                window.history.replaceState(
+                    { ...currentState, scrollY: scrollY },
+                    '',
+                    window.location.href
+                );
+            } catch (e) {
+                this.debug('Failed to save to history:', e);
+            }
+            
+            // 2. SessionStorageに保存（バックアップ）
+            try {
+                const positions = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '{}');
+                positions[url] = scrollY;
+                sessionStorage.setItem(STORAGE_KEY, JSON.stringify(positions));
+            } catch (e) {
+                this.debug('Failed to save to sessionStorage:', e);
+            }
+            
+            this.debug(`Scroll position saved: ${scrollY}px for ${url}`);
+        };
+
+        // スクロール位置を復元（複数の方法から）
+        const restoreScrollPosition = () => {
+            let scrollY = 0;
+            const url = window.location.href;
+            
+            // 1. History APIから復元を試みる
+            if (window.history.state && typeof window.history.state.scrollY === 'number') {
+                scrollY = window.history.state.scrollY;
+                this.debug(`Restored from history.state: ${scrollY}px`);
+            }
+            // 2. SessionStorageから復元を試みる（フォールバック）
+            else {
+                try {
+                    const positions = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '{}');
+                    if (typeof positions[url] === 'number') {
+                        scrollY = positions[url];
+                        this.debug(`Restored from sessionStorage: ${scrollY}px`);
+                    }
+                } catch (e) {
+                    this.debug('Failed to restore from sessionStorage:', e);
+                }
+            }
+            
+            // スクロール位置を復元
+            if (scrollY > 0) {
+                // 複数のメソッドで試行
+                requestAnimationFrame(() => {
+                    window.scrollTo(0, scrollY);
+                    document.documentElement.scrollTop = scrollY;
+                    document.body.scrollTop = scrollY;
+                    this.debug(`Scroll restored to: ${scrollY}px`);
                 });
-                this.debug(`Scroll restored to: ${state.scrollY}px`);
             }
         };
 
-        // 初回読み込み時の復元
-        window.addEventListener('load', restoreScroll);
+        // 定期的にスクロール位置を保存（スクロール中）
+        let scrollTimeout;
+        const handleScroll = () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                saveScrollPosition();
+            }, 100);
+        };
+        window.addEventListener('scroll', handleScroll, { passive: true });
+
+        // ページ離脱前に保存
+        window.addEventListener('beforeunload', saveScrollPosition);
+        window.addEventListener('pagehide', saveScrollPosition);
+
+        // リンククリック時に保存
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('a[href]');
+            if (link && !link.hasAttribute('target')) {
+                const href = link.getAttribute('href');
+                // アンカーリンク以外の内部リンク
+                if (href && !href.startsWith('#') && 
+                    (href.startsWith('/') || href.startsWith(window.location.origin))) {
+                    saveScrollPosition();
+                }
+            }
+        }, true); // キャプチャフェーズで実行
 
         // 戻る/進むボタンでの復元
         window.addEventListener('popstate', (e) => {
-            if (e.state && typeof e.state.scrollY === 'number') {
-                setTimeout(() => {
-                    window.scrollTo({
-                        top: e.state.scrollY,
-                        behavior: 'instant'
-                    });
-                    this.debug(`Scroll restored via popstate to: ${e.state.scrollY}px`);
-                }, 50); // 少し遅延させて確実に復元
-            }
+            this.debug('popstate triggered', e.state);
+            // 少し遅延させてDOMが更新されてから復元
+            setTimeout(() => {
+                restoreScrollPosition();
+            }, 10);
         });
 
-        // ページ遷移前にスクロール位置を保存
-        window.addEventListener('beforeunload', () => {
-            const currentScrollY = window.scrollY;
-            if (window.history.state) {
-                window.history.replaceState(
-                    { ...window.history.state, scrollY: currentScrollY },
-                    '',
-                    window.location.href
-                );
-            } else {
-                window.history.replaceState(
-                    { scrollY: currentScrollY },
-                    '',
-                    window.location.href
-                );
-            }
-            this.debug(`Scroll position saved: ${currentScrollY}px`);
-        });
+        // ページ読み込み完了時に復元
+        if (document.readyState === 'complete') {
+            setTimeout(restoreScrollPosition, 10);
+        } else {
+            window.addEventListener('load', () => {
+                setTimeout(restoreScrollPosition, 10);
+            });
+        }
 
-        // リンククリック時にスクロール位置を保存
-        document.addEventListener('click', (e) => {
-            const link = e.target.closest('a[href]');
-            if (link && !link.hasAttribute('target') && !link.getAttribute('href').startsWith('#')) {
-                const href = link.getAttribute('href');
-                // 内部リンクの場合のみ
-                if (href.startsWith('/') || href.startsWith(window.location.origin)) {
-                    const currentScrollY = window.scrollY;
-                    if (window.history.state) {
-                        window.history.replaceState(
-                            { ...window.history.state, scrollY: currentScrollY },
-                            '',
-                            window.location.href
-                        );
-                    } else {
-                        window.history.replaceState(
-                            { scrollY: currentScrollY },
-                            '',
-                            window.location.href
-                        );
-                    }
-                    this.debug(`Scroll position saved before navigation: ${currentScrollY}px`);
-                }
-            }
-        });
+        // DOMContentLoaded時にも復元試行
+        if (document.readyState !== 'loading') {
+            setTimeout(restoreScrollPosition, 10);
+        }
 
-        this.debug('Scroll restoration initialized');
+        this.debug('Enhanced scroll restoration initialized');
     }
 };
 
