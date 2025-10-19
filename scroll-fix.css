@@ -1,0 +1,147 @@
+/* スクロール問題修正CSS - Scroll Fix CSS */
+/* このCSSを問題のあるページに適用してください */
+
+/* 基本的なスクロール修正 - Basic scroll fixes */
+html, body {
+    overflow: auto !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    scroll-behavior: smooth !important;
+}
+
+/* no-scrollクラスの無効化 - Disable no-scroll classes */
+html.no-scroll,
+body.no-scroll,
+.no-scroll {
+    overflow: auto !important;
+}
+
+/* ヒーローセクションの修正 - Hero section fixes */
+.section-hero,
+.hero,
+.banner,
+section[class*="hero"],
+.landing-hero,
+.page-hero,
+.front-page {
+    /* 100vhの高さ設定を修正 */
+    min-height: 100vh !important;
+    height: auto !important;
+    
+    /* 固定位置の修正 */
+    position: relative !important;
+    
+    /* オーバーフロー修正 */
+    overflow: visible !important;
+    
+    /* フレックスボックス対応 */
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+}
+
+/* より具体的なヒーローセクション */
+.section-hero.front-page,
+section.section-hero.front-page {
+    min-height: 100vh !important;
+    height: auto !important;
+    position: relative !important;
+    overflow: visible !important;
+}
+
+/* WordPressやその他CMSの一般的なクラス */
+.site-main,
+.site-content,
+.main-content,
+.page-content {
+    overflow: visible !important;
+}
+
+/* ラッパー要素の修正 */
+.wrapper,
+.container,
+.site-wrapper,
+#page,
+#main {
+    overflow: visible !important;
+    min-height: auto !important;
+    height: auto !important;
+}
+
+/* アニメーション関連の修正 */
+.animated,
+.animate__animated {
+    overflow: visible !important;
+}
+
+/* モバイル対応 - Mobile responsive fixes */
+@media (max-width: 768px) {
+    .section-hero,
+    .hero,
+    section[class*="hero"] {
+        min-height: 70vh !important;
+        padding: 20px 0 !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .section-hero,
+    .hero,
+    section[class*="hero"] {
+        min-height: 50vh !important;
+        padding: 15px 0 !important;
+    }
+}
+
+/* デバッグ用のスタイル（一時的に使用） */
+/* Debugging styles (use temporarily) */
+/*
+.section-hero {
+    border: 2px solid red !important;
+    background-color: rgba(255, 0, 0, 0.1) !important;
+}
+*/
+
+/* 強制的なスクロール有効化 - Force enable scrolling */
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-padding-top: 0px;
+}
+
+/* JavaScriptによるスクロール無効化を防ぐ */
+/* Prevent JavaScript from disabling scroll */
+html[style*="overflow: hidden"],
+body[style*="overflow: hidden"] {
+    overflow: auto !important;
+}
+
+/* 追加のアクセシビリティ対応 */
+/* Additional accessibility support */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto !important;
+    }
+}
+
+/* スクロールバーのスタイル調整（Webkit系ブラウザ） */
+/* Scrollbar styling for Webkit browsers */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
