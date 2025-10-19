@@ -3,8 +3,16 @@
  * 全JSを統合・最適化したメインスクリプト
  * 重複削除、パフォーマンス最適化済み
  * 
- * @version 1.0.0
- * @date 2025-10-05
+ * @version 1.0.1
+ * @date 2025-10-19
+ * 
+ * CHANGELOG:
+ * v1.0.1 (2025-10-19):
+ * - Fixed filter functionality conflicts with archive-grant.php
+ * - Archive pages now use their own comprehensive filter system
+ * - Enhanced scroll restoration system with dual-storage (History API + SessionStorage)
+ * - Added automatic scroll position saving during scroll events
+ * - Browser back button now properly restores scroll position
  */
 
 /**
@@ -436,7 +444,41 @@ cacheElements() {
      * ==========================================================================
      */
     setupFilters() {
-        // フィルターボタンのイベント
+        // archive-grant.php has its own comprehensive filter system
+        // Skip filter initialization on archive pages to avoid conflicts
+        const isArchivePage = document.body.classList.contains('post-type-archive-grant') ||
+                             document.body.classList.contains('tax-grant_category') ||
+                             document.body.classList.contains('tax-grant_prefecture') ||
+                             document.body.classList.contains('tax-grant_municipality') ||
+                             document.querySelector('.grant-archive-page');
+        
+        if (isArchivePage) {
+            this.debug('Archive page detected - skipping unified filter initialization');
+            // Only setup comparison and filter sheet close handlers
+            document.addEventListener('click', (e) => {
+                // 比較実行
+                if (e.target.matches('.execute-comparison')) {
+                    e.preventDefault();
+                    this.executeComparison();
+                }
+
+                // 比較クリア
+                if (e.target.matches('.clear-comparison')) {
+                    e.preventDefault();
+                    this.state.comparisonItems = [];
+                    this.updateComparisonWidget();
+                    this.saveComparisonToStorage();
+                }
+
+                // フィルターシート閉じる
+                if (e.target.matches('.gi-filter-sheet-close')) {
+                    this.hideFilterBottomSheet();
+                }
+            });
+            return;
+        }
+        
+        // フィルターボタンのイベント（非アーカイブページのみ）
         this.elements.filterButtons.forEach(button => {
             button.addEventListener('click', () => {
                 this.toggleFilter(button);
