@@ -3747,18 +3747,22 @@ $region_groups = [
     };
     
     function init() {
-        // ← この下に追加
+        console.log('🚀 Archive Grant Init Started');
+        console.log('📊 Debug Info:', {
             ajaxUrl: AJAX_URL,
             noncePresent: !!NONCE,
             municipalityBarExists: !!elements.municipalityBar,
             municipalityFilterSectionExists: !!elements.municipalityFilterSection,
-            prefectureButtonCount: elements.prefectureBtns.length
+            prefectureButtonCount: elements.prefectureBtns.length,
+            categoryButtonCount: elements.categoryBtns.length,
+            grantsContainerExists: !!elements.grantsContainer
         });
-        // ← ここまで追加
         
         setupEventListeners();
         loadGrants();
         updateScrollButtons();
+        
+        console.log('✅ Archive Grant Init Completed');
     }
     
     function setupEventListeners() {
@@ -3825,12 +3829,23 @@ $region_groups = [
             document.querySelector('.category-buttons-other')
         ];
         
+        console.log('🔘 Setting up category button listeners:', {
+            mainContainer: !!categoryContainers[0],
+            otherContainer: !!categoryContainers[1],
+            totalButtons: elements.categoryBtns.length
+        });
+        
         categoryContainers.forEach(container => {
             if (!container) return;
             
             container.addEventListener('click', function(e) {
+                console.log('👆 Category container clicked', e.target);
                 const btn = e.target.closest('.category-btn');
-                if (!btn) return;
+                if (!btn) {
+                    console.log('⚠️ Not a category button');
+                    return;
+                }
+                console.log('✅ Category button clicked:', btn.dataset.category);
                 
                 const categoryValue = btn.dataset.category;
                 
@@ -3871,12 +3886,22 @@ $region_groups = [
         // Optimized: 47+ individual listeners → 8 delegated listeners (per region)
         const prefectureGroups = document.querySelectorAll('.region-prefecture-group');
         
+        console.log('🗾 Setting up prefecture button listeners:', {
+            groupCount: prefectureGroups.length,
+            totalButtons: elements.prefectureBtns.length
+        });
+        
         prefectureGroups.forEach(group => {
             if (!group) return;
             
             group.addEventListener('click', function(e) {
+                console.log('👆 Prefecture group clicked', e.target);
                 const btn = e.target.closest('.prefecture-btn');
-                if (!btn) return;
+                if (!btn) {
+                    console.log('⚠️ Not a prefecture button');
+                    return;
+                }
+                console.log('✅ Prefecture button clicked:', btn.dataset.prefecture);
                 
                 const prefectureValue = btn.dataset.prefecture;
                 
@@ -4411,7 +4436,12 @@ $region_groups = [
     
     // ===== 助成金データ読み込み =====
     function loadGrants() {
-        if (state.isLoading) return;
+        console.log('📡 loadGrants called with state:', JSON.parse(JSON.stringify(state)));
+        
+        if (state.isLoading) {
+            console.log('⏳ Already loading, skipping...');
+            return;
+        }
         
         state.isLoading = true;
         showLoading(true);
@@ -4475,24 +4505,31 @@ $region_groups = [
             method: 'POST',
             body: formData
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('📥 AJAX Response received:', response.status);
+            return response.json();
+        })
         .then(data => {
+            console.log('📦 AJAX Data:', data);
             if (data.success) {
+                console.log('✅ Success - Grants count:', data.data.grants ? data.data.grants.length : 0);
                 displayGrants(data.data.grants);
                 updateStats(data.data.stats);
                 updatePagination(data.data.pagination);
                 updateActiveFilters();
             } else {
+                console.error('❌ AJAX Error:', data.data);
                 showError('データの読み込みに失敗しました。');
             }
         })
         .catch(error => {
-            console.error('Fetch Error:', error);
+            console.error('💥 Fetch Error:', error);
             showError('通信エラーが発生しました。');
         })
         .finally(() => {
             state.isLoading = false;
             showLoading(false);
+            console.log('🏁 loadGrants completed');
         });
     }
     

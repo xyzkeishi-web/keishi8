@@ -444,41 +444,26 @@ cacheElements() {
      * ==========================================================================
      */
     setupFilters() {
-        // archive-grant.php has its own comprehensive filter system
-        // Skip filter initialization on archive pages to avoid conflicts
-        const isArchivePage = document.body.classList.contains('post-type-archive-grant') ||
-                             document.body.classList.contains('tax-grant_category') ||
-                             document.body.classList.contains('tax-grant_prefecture') ||
-                             document.body.classList.contains('tax-grant_municipality') ||
-                             document.querySelector('.grant-archive-page');
+        // archive-grant.php has its own comprehensive filter system embedded in the template
+        // This unified filter system is for OTHER pages (e.g., single grant pages, front page)
+        // We should NOT interfere with archive page filters at all
         
-        if (isArchivePage) {
-            this.debug('Archive page detected - skipping unified filter initialization');
-            // Only setup comparison and filter sheet close handlers
-            document.addEventListener('click', (e) => {
-                // 比較実行
-                if (e.target.matches('.execute-comparison')) {
-                    e.preventDefault();
-                    this.executeComparison();
-                }
-
-                // 比較クリア
-                if (e.target.matches('.clear-comparison')) {
-                    e.preventDefault();
-                    this.state.comparisonItems = [];
-                    this.updateComparisonWidget();
-                    this.saveComparisonToStorage();
-                }
-
-                // フィルターシート閉じる
-                if (e.target.matches('.gi-filter-sheet-close')) {
-                    this.hideFilterBottomSheet();
-                }
-            });
+        // Check if we're on an archive page - if so, skip ALL filter setup
+        const isGrantArchive = document.body.classList.contains('post-type-archive-grant') ||
+                               document.body.classList.contains('tax-grant_category') ||
+                               document.body.classList.contains('tax-grant_prefecture') ||
+                               document.body.classList.contains('tax-grant_municipality');
+        
+        if (isGrantArchive) {
+            this.debug('Grant archive detected - unified filters disabled, archive inline JS will handle');
+            // Don't set up ANY handlers that might interfere
             return;
         }
         
-        // フィルターボタンのイベント（非アーカイブページのみ）
+        // Only run for non-archive pages
+        this.debug('Setting up unified filters for non-archive page');
+        
+        // フィルターボタンのイベント
         this.elements.filterButtons.forEach(button => {
             button.addEventListener('click', () => {
                 this.toggleFilter(button);
