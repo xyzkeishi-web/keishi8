@@ -1,13 +1,15 @@
 <?php
 /**
- * Grant Card Unified - Improved Design Edition v17.0
+ * Grant Card Unified - Error Fixed Complete Edition v20.1
  * template-parts/grant-card-unified.php
  * 
- * グレートーン & イエローアクセント版
- * 機能はそのまま、デザインを改善
+ * ✅ 構文エラー完全修正
+ * ✅ AI Search Section完全一致デザイン
+ * ✅ AI要約表示完全実装
+ * ✅ AIモーダル完全実装
  * 
- * @package Grant_Insight_Improved
- * @version 17.0.0
+ * @package Grant_Insight_Perfect
+ * @version 20.1.0
  */
 
 // セキュリティチェック
@@ -136,479 +138,491 @@ $difficulty_configs = array(
     'hard' => array('label' => '難', 'icon' => '●●●'),
 );
 $difficulty_data = $difficulty_configs[$grant_difficulty] ?? $difficulty_configs['normal'];
-
-$assets_loaded = false;
 ?>
-
-<?php if (!$assets_loaded): ?>
 
 <style>
 /* ============================================
-   🎨 Improved Design System - グレー & イエロー
+   🎨 AI Search Section完全一致デザイン v20.1
+   grant-card-unified.php専用CSS
 ============================================ */
 
-:root {
-    /* カラーパレット - 改善版 */
-    --gi-black: #1a1a1a;
-    --gi-white: #ffffff;
-    --gi-yellow: #ffeb3b;
-    --gi-yellow-dark: #ffc107;
-    
-    /* グレースケール - 目に優しい */
-    --gi-gray-50: #fafafa;
-    --gi-gray-100: #f5f5f5;
-    --gi-gray-200: #eeeeee;
-    --gi-gray-300: #e0e0e0;
-    --gi-gray-400: #bdbdbd;
-    --gi-gray-500: #9e9e9e;
-    --gi-gray-600: #757575;
-    --gi-gray-700: #616161;
-    --gi-gray-800: #424242;
-    --gi-gray-900: #212121;
-    
-    /* シャドウ */
-    --gi-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-    --gi-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --gi-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-    --gi-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
-    
-    /* ボーダー */
-    --gi-border: 1px solid var(--gi-gray-300);
-    --gi-border-hover: 1px solid var(--gi-gray-500);
-    
-    /* トランジション */
-    --gi-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+.grants-grid,
+.grant-card-unified,
+.grant-ai-modal {
+    --gi-color-primary: #000000;
+    --gi-color-secondary: #333333;
+    --gi-color-tertiary: #666666;
+    --gi-color-accent: #FFEB3B;
+    --gi-color-background: #FFFFFF;
+    --gi-color-surface: #FAFAFA;
+    --gi-color-border: #000000;
+    --gi-color-text: #000000;
+    --gi-color-text-muted: #666666;
+    --gi-color-text-light: #999999;
+    --gi-spacing-xs: 3px;
+    --gi-spacing-sm: 6px;
+    --gi-spacing-md: 12px;
+    --gi-spacing-lg: 18px;
+    --gi-spacing-xl: 24px;
+    --gi-font-size-xs: 9px;
+    --gi-font-size-sm: 10px;
+    --gi-font-size-base: 12px;
+    --gi-font-size-md: 14px;
+    --gi-font-size-lg: 16px;
+    --gi-radius-sm: 4px;
+    --gi-radius-md: 8px;
+    --gi-radius-lg: 12px;
+    --gi-radius-full: 9999px;
+    --gi-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --gi-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.08);
+    --gi-shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+    --gi-shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.12);
+    --gi-shadow-2xl: 0 20px 40px rgba(0, 0, 0, 0.15);
+    --gi-transition-fast: 0.15s ease;
+    --gi-transition-base: 0.3s ease;
 }
 
-/* Grid Container */
 .grants-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-    gap: 1.25rem;
-    padding: 1.25rem;
-    background: var(--gi-gray-50);
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--gi-spacing-lg);
+    padding: 0;
+    background: transparent;
 }
 
-/* ============================================
-   📦 Card Structure - 改善版
-============================================ */
-.grant-view-card .grant-card-unified {
+.grant-card-unified {
     position: relative;
-    width: 100%;
-    background: var(--gi-white);
-    border: var(--gi-border);
-    border-radius: 12px;
-    overflow: hidden;
-    transition: var(--gi-transition);
-    display: flex;
-    flex-direction: column;
-    box-shadow: var(--gi-shadow-sm);
-}
-
-.grant-view-card .grant-card-unified:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--gi-shadow-md);
-    border-color: var(--gi-gray-400);
-}
-
-/* ============================================
-   🎯 Header - グレー & イエロー
-============================================ */
-.grant-compact-header {
-    background: var(--gi-gray-800);
-    padding: 0.625rem 0.875rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-}
-
-.grant-compact-header.status--closed {
-    background: var(--gi-gray-600);
-}
-
-.grant-compact-header.status--urgent {
-    background: var(--gi-gray-900);
-}
-
-.grant-status-compact {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--gi-white);
-    font-size: 0.6875rem;
-    font-weight: 700;
-}
-
-.grant-status-dot {
-    width: 7px;
-    height: 7px;
-    background: var(--gi-yellow);
-    border-radius: 50%;
-    box-shadow: 0 0 4px var(--gi-yellow);
-}
-
-.grant-deadline-compact {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.375rem 0.625rem;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 6px;
-    color: var(--gi-white);
-    font-size: 0.6875rem;
-    font-weight: 700;
-}
-
-.grant-deadline-compact.critical {
-    background: var(--gi-yellow);
-    color: var(--gi-black);
-    animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.9; transform: scale(1.02); }
-}
-
-/* ============================================
-   📝 Content - 改善版
-============================================ */
-.grant-card-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 1rem;
-    gap: 0.75rem;
-}
-
-/* ============================================
-   🏷️ Category & Title - イエローアクセント
-============================================ */
-.grant-category-compact {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.375rem 0.625rem;
-    background: var(--gi-yellow);
-    color: var(--gi-black);
-    border-radius: 6px;
-    font-size: 0.6875rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    align-self: flex-start;
-    box-shadow: 0 2px 4px rgba(255, 235, 59, 0.3);
-}
-
-.grant-title-compact {
-    font-size: 0.9375rem;
-    font-weight: 800;
-    line-height: 1.4;
-    color: var(--gi-gray-900);
-    margin: 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.grant-title-compact a {
-    color: inherit;
-    text-decoration: none;
-    transition: var(--gi-transition);
-}
-
-.grant-title-compact a:hover {
-    color: var(--gi-gray-700);
-}
-
-/* ============================================
-   📄 Summary
-============================================ */
-.grant-summary-compact {
-    font-size: 0.75rem;
-    line-height: 1.5;
-    color: var(--gi-gray-600);
-    margin: 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-/* ============================================
-   📊 Info Grid - グレー背景
-============================================ */
-.grant-info-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-}
-
-.grant-info-item {
-    padding: 0.625rem;
-    background: var(--gi-gray-100);
-    border: 1px solid var(--gi-gray-200);
-    border-radius: 8px;
-    text-align: center;
-    transition: var(--gi-transition);
-}
-
-.grant-info-item:hover {
-    background: var(--gi-gray-200);
-    border-color: var(--gi-gray-300);
-}
-
-.grant-info-label {
-    display: block;
-    font-size: 0.625rem;
-    font-weight: 700;
-    color: var(--gi-gray-600);
-    margin-bottom: 0.25rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.grant-info-value {
-    display: block;
-    font-size: 0.8125rem;
-    font-weight: 800;
-    color: var(--gi-gray-900);
-}
-
-/* ============================================
-   📋 Detail Items
-============================================ */
-.grant-details-compact {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 0.75rem;
-    background: var(--gi-gray-50);
-    border-radius: 8px;
-    border: 1px solid var(--gi-gray-200);
-}
-
-.grant-detail-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-    font-size: 0.75rem;
-    line-height: 1.4;
-}
-
-.grant-detail-icon {
-    width: 1rem;
-    height: 1rem;
-    flex-shrink: 0;
-    stroke: var(--gi-gray-600);
-    stroke-width: 2.5;
-    margin-top: 0.125rem;
-}
-
-.grant-detail-label {
-    font-weight: 700;
-    color: var(--gi-gray-700);
-    min-width: 3rem;
-}
-
-.grant-detail-text {
-    color: var(--gi-gray-800);
-    flex: 1;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-/* ============================================
-   🎬 Actions - 改善版
-============================================ */
-.grant-actions-compact {
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    gap: 0.5rem;
-    padding: 0.875rem;
-    background: var(--gi-gray-50);
-    border-top: 1px solid var(--gi-gray-200);
-}
-
-/* ============================================
-   🔘 Buttons - グレー & イエロー
-============================================ */
-.grant-btn-compact {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.375rem;
-    padding: 0.625rem 0.875rem;
-    min-height: 38px;
-    border-radius: 8px;
-    font-size: 0.75rem;
-    font-weight: 700;
+    background: var(--gi-color-background);
+    padding: var(--gi-spacing-lg);
+    border: 3px solid #000000 !important;
+    transition: all var(--gi-transition-base);
     cursor: pointer;
-    transition: var(--gi-transition);
-    text-decoration: none;
-    white-space: nowrap;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.grant-btn-compact--primary {
-    background: var(--gi-gray-900);
-    color: var(--gi-white);
-    border: 1px solid var(--gi-gray-900);
-}
-
-.grant-btn-compact--primary:hover {
-    background: var(--gi-gray-800);
-    transform: translateY(-2px);
-    box-shadow: var(--gi-shadow-sm);
-}
-
-.grant-btn-compact--secondary {
-    background: var(--gi-white);
-    color: var(--gi-gray-700);
-    border: 1px solid var(--gi-gray-300);
-    min-width: 38px;
-    padding: 0.625rem;
-}
-
-.grant-btn-compact--secondary:hover {
-    background: var(--gi-gray-100);
-    border-color: var(--gi-gray-400);
-}
-
-.grant-btn-compact--ai {
-    background: var(--gi-yellow);
-    color: var(--gi-black);
-    border: 1px solid var(--gi-yellow);
-    min-width: 38px;
-    padding: 0.625rem;
-    box-shadow: 0 2px 4px rgba(255, 235, 59, 0.3);
-}
-
-.grant-btn-compact--ai:hover {
-    background: var(--gi-yellow-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(255, 235, 59, 0.4);
-}
-
-.grant-icon-compact {
-    width: 1rem;
-    height: 1rem;
-    stroke-width: 2.5;
-}
-
-/* ============================================
-   🤖 AI Modal - 改善版
-============================================ */
-.grant-ai-modal {
-    position: fixed;
+.grant-card-unified::before {
+    content: '';
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
+    height: 4px;
+    background: var(--gi-color-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--gi-transition-base);
+}
+
+.grant-card-unified:hover::before {
+    transform: scaleX(1);
+}
+
+.grant-card-unified::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 0%, rgba(0,0,0,0.02) 100%);
+    opacity: 0;
+    transition: opacity var(--gi-transition-base);
+    pointer-events: none;
+}
+
+.grant-card-unified:hover::after {
+    opacity: 1;
+}
+
+.grant-card-unified:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--gi-shadow-2xl);
+    border-color: #333333 !important;
+}
+
+.card-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: var(--gi-spacing-sm) var(--gi-spacing-md);
+    background: var(--gi-color-primary);
+    color: var(--gi-color-background);
+    font-size: var(--gi-font-size-xs);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    z-index: 10;
+}
+
+.grant-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--gi-spacing-sm);
+    margin-bottom: var(--gi-spacing-md);
+}
+
+.grant-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.5;
+    letter-spacing: 0.02em;
+    margin: 0;
+    flex: 1;
+    color: var(--gi-color-text);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+
+.grant-card-title a {
+    color: inherit;
+    text-decoration: none;
+    transition: color var(--gi-transition-fast);
+    display: block;
+    padding: 2px 0;
+}
+
+.grant-card-title a:hover {
+    color: var(--gi-color-secondary);
+}
+
+.card-bookmark {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--gi-color-border);
+    background: var(--gi-color-background);
+    border-radius: var(--gi-radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--gi-transition-fast);
+    flex-shrink: 0;
+}
+
+.card-bookmark:hover {
+    border-color: var(--gi-color-accent);
+    background: var(--gi-color-accent);
+    color: var(--gi-color-primary);
+}
+
+.card-ai-summary {
+    background: linear-gradient(135deg, #fffbea 0%, #fff9e6 100%);
+    border: 2px solid var(--gi-color-accent);
+    border-radius: var(--gi-radius-md);
+    padding: var(--gi-spacing-lg) var(--gi-spacing-md) var(--gi-spacing-md);
+    margin-bottom: var(--gi-spacing-md);
+    position: relative;
+    box-shadow: 0 2px 8px rgba(255, 235, 59, 0.2);
+}
+
+.card-ai-summary::before {
+    content: 'AI要約';
+    position: absolute;
+    top: -10px;
+    left: var(--gi-spacing-md);
+    background: var(--gi-color-accent);
+    color: var(--gi-color-primary);
+    padding: 4px 12px;
+    font-size: var(--gi-font-size-xs);
+    font-weight: 800;
+    border-radius: var(--gi-radius-sm);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    box-shadow: 0 2px 4px rgba(255, 235, 59, 0.4);
+}
+
+.card-ai-summary-text {
+    font-size: var(--gi-font-size-base);
+    line-height: 1.7;
+    color: var(--gi-color-secondary);
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-weight: 500;
+}
+
+.card-meta {
+    display: flex;
+    gap: var(--gi-spacing-md);
+    margin-bottom: var(--gi-spacing-md);
+}
+
+.meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gi-spacing-xs);
+}
+
+.meta-item svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    stroke-width: 2;
+    margin-bottom: var(--gi-spacing-xs);
+}
+
+.meta-label {
+    font-size: var(--gi-font-size-xs);
+    color: var(--gi-color-text-light);
+}
+
+.meta-value {
+    font-size: var(--gi-font-size-sm);
+    font-weight: 700;
+    color: var(--gi-color-primary);
+}
+
+.card-org {
+    font-size: var(--gi-font-size-xs);
+    color: var(--gi-color-tertiary);
+    margin: 0 0 var(--gi-spacing-md);
+    display: flex;
+    align-items: center;
+    gap: var(--gi-spacing-xs);
+}
+
+.card-org svg {
+    width: 12px;
+    height: 12px;
+    stroke: currentColor;
+    stroke-width: 1.5;
+}
+
+.card-rate {
+    margin-bottom: var(--gi-spacing-md);
+}
+
+.rate-bar {
+    height: 4px;
+    background: var(--gi-color-border);
+    border-radius: var(--gi-radius-sm);
+    overflow: hidden;
+    margin-bottom: var(--gi-spacing-xs);
+}
+
+.rate-fill {
     height: 100%;
+    background: linear-gradient(90deg, #10b981, #34d399);
+    transition: width 1s ease-out;
+}
+
+.rate-text {
+    font-size: var(--gi-font-size-xs);
+    color: var(--gi-color-tertiary);
+    display: flex;
+    align-items: center;
+    gap: var(--gi-spacing-xs);
+}
+
+.rate-text svg {
+    width: 12px;
+    height: 12px;
+    stroke: currentColor;
+    stroke-width: 1.5;
+}
+
+.card-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--gi-spacing-md);
+    margin-top: auto;
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 10;
+}
+
+.ai-assist-btn {
+    padding: var(--gi-spacing-sm) var(--gi-spacing-md);
+    background: transparent;
+    border: 2px solid var(--gi-color-primary);
+    color: var(--gi-color-primary);
+    font-size: var(--gi-font-size-xs);
+    font-weight: 600;
+    border-radius: var(--gi-radius-full);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all var(--gi-transition-base);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 20;
+}
+
+.ai-assist-btn:hover {
+    background: var(--gi-color-primary);
+    color: var(--gi-color-background);
+    transform: translateY(-1px);
+    box-shadow: var(--gi-shadow-md);
+}
+
+.ai-assist-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    stroke-width: 2;
+}
+
+.card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--gi-font-size-sm);
+    font-weight: 600;
+    color: var(--gi-color-primary);
+    text-decoration: none;
+    transition: all var(--gi-transition-fast);
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 20;
+}
+
+.card-link:hover {
+    gap: 10px;
+    color: var(--gi-color-accent);
+}
+
+.card-link svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    stroke-width: 2;
+}
+
+.grant-ai-modal {
+    position: fixed;
+    inset: 0;
     z-index: 10000;
     display: flex;
     align-items: center;
     justify-content: center;
     opacity: 0;
-    animation: fadeIn 0.3s ease forwards;
-}
-
-@keyframes fadeIn {
-    to { opacity: 1; }
+    visibility: hidden;
+    transition: all 0.3s ease;
 }
 
 .grant-ai-modal-overlay {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(4px);
 }
 
 .grant-ai-modal-container {
     position: relative;
-    width: 90%;
-    max-width: 550px;
-    height: 75vh;
-    max-height: 650px;
-    background: var(--gi-white);
-    border: 2px solid var(--gi-gray-300);
-    border-radius: 16px;
-    box-shadow: var(--gi-shadow-xl);
+    width: 90vw;
+    max-width: 600px;
+    height: auto;
+    max-height: 85vh;
+    background: var(--gi-color-background);
+    border-radius: 20px;
+    box-shadow: var(--gi-shadow-2xl);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    animation: slideUp 0.3s ease;
-}
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
 }
 
 .grant-ai-modal-header {
-    padding: 1.25rem;
-    background: var(--gi-gray-900);
-    color: var(--gi-white);
-    position: relative;
-}
-
-.grant-ai-modal-title {
+    padding: var(--gi-spacing-lg);
+    border-bottom: 2px solid #000000;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    font-size: 1rem;
-    font-weight: 800;
-    margin-bottom: 0.5rem;
+    gap: var(--gi-spacing-md);
+    position: relative;
+    background: var(--gi-color-surface);
 }
 
-.grant-ai-modal-title-icon {
-    width: 1.25rem;
-    height: 1.25rem;
-    stroke-width: 2.5;
+.assistant-avatar {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
 }
 
-.grant-ai-modal-subtitle {
-    font-size: 0.8125rem;
-    opacity: 0.9;
-    max-width: 85%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.avatar-ring {
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--gi-color-primary);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.05); }
+}
+
+.avatar-icon {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gi-color-primary);
+    color: var(--gi-color-background);
+    border-radius: 50%;
+    font-size: var(--gi-font-size-sm);
+    font-weight: 700;
+}
+
+.assistant-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.assistant-name {
+    font-size: var(--gi-font-size-sm);
+    font-weight: 600;
+    margin: 0 0 var(--gi-spacing-xs);
+    color: var(--gi-color-text);
+}
+
+.assistant-status {
+    font-size: var(--gi-font-size-xs);
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    gap: var(--gi-spacing-xs);
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    background: #10b981;
+    border-radius: 50%;
+    animation: blink 2s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
 }
 
 .grant-ai-modal-close {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    width: 2rem;
-    height: 2rem;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    background: transparent;
-    color: var(--gi-white);
-    border-radius: 6px;
+    margin-left: auto;
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--gi-color-primary);
+    background: var(--gi-color-background);
+    color: var(--gi-color-primary);
+    border-radius: var(--gi-radius-sm);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: var(--gi-transition);
+    transition: all var(--gi-transition-base);
 }
 
 .grant-ai-modal-close:hover {
-    background: var(--gi-yellow);
-    color: var(--gi-black);
-    border-color: var(--gi-yellow);
-    transform: rotate(90deg);
+    background: var(--gi-color-primary);
+    color: var(--gi-color-background);
 }
 
 .grant-ai-modal-body {
@@ -618,17 +632,14 @@ $assets_loaded = false;
     overflow: hidden;
 }
 
-/* ============================================
-   💬 Chat Messages - 改善版
-============================================ */
 .grant-ai-chat-messages {
     flex: 1;
-    padding: 1.25rem;
+    padding: 20px;
     overflow-y: auto;
-    background: var(--gi-gray-50);
+    background: var(--gi-color-surface);
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 16px;
 }
 
 .grant-ai-chat-messages::-webkit-scrollbar {
@@ -636,35 +647,25 @@ $assets_loaded = false;
 }
 
 .grant-ai-chat-messages::-webkit-scrollbar-track {
-    background: var(--gi-gray-200);
+    background: #e0e0e0;
     border-radius: 3px;
 }
 
 .grant-ai-chat-messages::-webkit-scrollbar-thumb {
-    background: var(--gi-gray-400);
+    background: #9e9e9e;
     border-radius: 3px;
-}
-
-.grant-ai-chat-messages::-webkit-scrollbar-thumb:hover {
-    background: var(--gi-gray-500);
 }
 
 .grant-ai-message {
     display: flex;
-    gap: 0.75rem;
+    gap: 12px;
     max-width: 85%;
     animation: messageSlideIn 0.3s ease;
 }
 
 @keyframes messageSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .grant-ai-message--assistant {
@@ -676,118 +677,127 @@ $assets_loaded = false;
     flex-direction: row-reverse;
 }
 
-.grant-ai-message--error {
-    align-self: flex-start;
-}
-
 .grant-ai-message-avatar {
-    width: 2.25rem;
-    height: 2.25rem;
+    width: 36px;
+    height: 36px;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    border: 1px solid var(--gi-gray-300);
+    border: 1px solid var(--gi-color-border);
 }
 
 .grant-ai-message--assistant .grant-ai-message-avatar {
-    background: var(--gi-gray-800);
-    color: var(--gi-white);
-    border-color: var(--gi-gray-800);
+    background: var(--gi-color-primary);
+    color: var(--gi-color-background);
+    border-color: var(--gi-color-primary);
 }
 
 .grant-ai-message--user .grant-ai-message-avatar {
-    background: var(--gi-yellow);
-    color: var(--gi-black);
-    border-color: var(--gi-yellow);
-}
-
-.grant-ai-message--error .grant-ai-message-avatar {
-    background: var(--gi-gray-600);
-    color: var(--gi-white);
-    border-color: var(--gi-gray-600);
+    background: var(--gi-color-accent);
+    color: var(--gi-color-primary);
+    border-color: var(--gi-color-accent);
 }
 
 .grant-ai-message-content {
-    background: var(--gi-white);
-    padding: 0.875rem;
+    background: var(--gi-color-background);
+    padding: 14px 16px;
     border-radius: 10px;
-    border: 1px solid var(--gi-gray-300);
-    font-size: 0.875rem;
+    border: 1px solid var(--gi-color-border);
+    font-size: 14px;
     line-height: 1.6;
     box-shadow: var(--gi-shadow-sm);
 }
 
 .grant-ai-message--user .grant-ai-message-content {
-    background: var(--gi-gray-800);
-    color: var(--gi-white);
-    border-color: var(--gi-gray-800);
+    background: var(--gi-color-primary);
+    color: var(--gi-color-background);
+    border-color: var(--gi-color-primary);
 }
 
-.grant-ai-message--error .grant-ai-message-content {
-    background: var(--gi-gray-100);
-    border-color: var(--gi-gray-400);
-    color: var(--gi-gray-800);
-}
-
-/* ============================================
-   ⌨️ Input Area - 改善版
-============================================ */
 .grant-ai-chat-input-container {
-    padding: 1.25rem;
-    background: var(--gi-white);
-    border-top: 1px solid var(--gi-gray-300);
+    padding: var(--gi-spacing-md);
+    border-top: 1px solid var(--gi-color-border);
+    position: relative;
+    background: var(--gi-color-background);
+}
+
+.typing-indicator {
+    position: absolute;
+    top: calc(-24px - var(--gi-spacing-sm));
+    left: var(--gi-spacing-lg);
+    display: none;
+    gap: var(--gi-spacing-xs);
+}
+
+.typing-indicator.active {
+    display: flex;
+}
+
+.typing-indicator span {
+    width: 8px;
+    height: 8px;
+    background: var(--gi-color-text-light);
+    border-radius: 50%;
+    animation: typing 1.4s infinite;
+}
+
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-10px); }
 }
 
 .grant-ai-chat-input-wrapper {
     display: flex;
-    gap: 0.75rem;
-    margin-bottom: 0.875rem;
+    gap: var(--gi-spacing-sm);
+    align-items: flex-end;
+    margin-bottom: var(--gi-spacing-md);
 }
 
 .grant-ai-chat-input {
     flex: 1;
-    padding: 0.875rem;
-    border: 1px solid var(--gi-gray-300);
-    border-radius: 10px;
-    font-family: inherit;
-    font-size: 0.875rem;
-    line-height: 1.5;
+    padding: var(--gi-spacing-md);
+    background: var(--gi-color-background);
+    border: 2px solid var(--gi-color-primary);
+    border-radius: var(--gi-radius-sm);
+    font-size: var(--gi-font-size-base);
     resize: none;
-    transition: var(--gi-transition);
-    min-height: 3rem;
-    max-height: 6rem;
-    background: var(--gi-gray-50);
+    outline: none;
+    transition: all var(--gi-transition-fast);
+    min-height: 44px;
+    max-height: 120px;
+    font-family: inherit;
 }
 
 .grant-ai-chat-input:focus {
-    outline: none;
-    border-color: var(--gi-gray-500);
-    background: var(--gi-white);
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+    border-color: var(--gi-color-accent);
+    box-shadow: 0 0 0 2px rgba(255, 235, 59, 0.2);
 }
 
 .grant-ai-chat-send {
-    width: 3rem;
-    height: 3rem;
-    background: var(--gi-yellow);
-    color: var(--gi-black);
-    border: 1px solid var(--gi-yellow);
-    border-radius: 10px;
+    height: 44px;
+    padding: 0 var(--gi-spacing-lg);
+    background: var(--gi-color-primary);
+    color: var(--gi-color-background);
+    border: 2px solid var(--gi-color-primary);
+    border-radius: var(--gi-radius-sm);
     cursor: pointer;
+    transition: all var(--gi-transition-fast);
+    font-weight: 600;
+    font-size: var(--gi-font-size-base);
     display: flex;
     align-items: center;
-    justify-content: center;
-    transition: var(--gi-transition);
+    gap: var(--gi-spacing-sm);
     flex-shrink: 0;
-    box-shadow: 0 2px 4px rgba(255, 235, 59, 0.3);
 }
 
 .grant-ai-chat-send:hover:not(:disabled) {
-    background: var(--gi-yellow-dark);
-    transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(255, 235, 59, 0.4);
+    background: var(--gi-color-background);
+    color: var(--gi-color-primary);
 }
 
 .grant-ai-chat-send:disabled {
@@ -795,66 +805,49 @@ $assets_loaded = false;
     cursor: not-allowed;
 }
 
-/* ============================================
-   💡 Suggestions - 改善版
-============================================ */
+.btn-text-desktop {
+    display: inline;
+}
+
 .grant-ai-chat-suggestions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--gi-spacing-sm);
 }
 
 .grant-ai-suggestion {
-    padding: 0.5rem 0.875rem;
-    background: var(--gi-white);
-    border: 1px solid var(--gi-gray-300);
-    border-radius: 8px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--gi-gray-700);
+    padding: var(--gi-spacing-sm) var(--gi-spacing-md);
+    background: var(--gi-color-background);
+    border: 1px solid var(--gi-color-border);
+    border-radius: var(--gi-radius-full);
+    font-size: var(--gi-font-size-xs);
+    font-weight: 500;
+    color: var(--gi-color-tertiary);
     cursor: pointer;
-    transition: var(--gi-transition);
-    white-space: nowrap;
+    transition: all var(--gi-transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .grant-ai-suggestion:hover {
-    background: var(--gi-yellow);
-    color: var(--gi-black);
-    border-color: var(--gi-yellow);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(255, 235, 59, 0.3);
+    background: var(--gi-color-primary);
+    color: var(--gi-color-background);
+    border-color: var(--gi-color-primary);
 }
 
-/* ============================================
-   ⏳ Loading Animation
-============================================ */
-.grant-ai-typing {
-    display: flex;
-    gap: 4px;
-    padding: 0.375rem 0;
+.grant-ai-suggestion svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    stroke-width: 2;
 }
 
-.grant-ai-typing span {
-    width: 7px;
-    height: 7px;
-    background: var(--gi-gray-500);
-    border-radius: 50%;
-    animation: typing 1.4s infinite ease-in-out;
-}
-
-.grant-ai-typing span:nth-child(1) { animation-delay: 0s; }
-.grant-ai-typing span:nth-child(2) { animation-delay: 0.2s; }
-.grant-ai-typing span:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes typing {
-    0%, 80%, 100% { 
-        transform: scale(0.8); 
-        opacity: 0.5; 
-    }
-    40% { 
-        transform: scale(1); 
-        opacity: 1; 
-    }
+.grant-icon-compact {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    stroke-width: 2.5;
 }
 
 .animate-spin {
@@ -866,77 +859,86 @@ $assets_loaded = false;
     to { transform: rotate(360deg); }
 }
 
-/* ============================================
-   📱 Responsive Design
-============================================ */
-@media (max-width: 768px) {
+@media (min-width: 768px) and (max-width: 1023px) {
+    .grants-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+    .grant-card-title {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 767px) {
     .grants-grid {
         grid-template-columns: 1fr;
-        padding: 1rem;
-        gap: 1rem;
+        gap: var(--gi-spacing-md);
     }
-    
-    .grant-info-grid {
-        grid-template-columns: 1fr;
+    .grant-card-title {
+        font-size: 13px;
     }
-    
-    .grant-actions-compact {
-        grid-template-columns: 1fr;
+    .card-meta {
+        flex-direction: column;
+        gap: var(--gi-spacing-sm);
     }
-    
-    .grant-btn-compact {
-        width: 100%;
+    .card-actions {
+        flex-direction: column;
+        gap: var(--gi-spacing-sm);
+        align-items: stretch;
     }
-    
+    .ai-assist-btn {
+        justify-content: center;
+    }
+    .card-link {
+        text-align: center;
+        justify-content: center;
+    }
     .grant-ai-modal-container {
-        width: 95%;
-        height: 85vh;
-        max-height: none;
+        width: 100vw !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+        transform: translateY(100%);
+    }
+    .btn-text-desktop {
+        display: none;
+    }
+    .grant-ai-chat-send {
+        padding: 0 var(--gi-spacing-md);
     }
 }
 
-@media (min-width: 769px) and (max-width: 1024px) {
+@media (max-width: 374px) {
+    .grant-card-unified {
+        padding: var(--gi-spacing-md);
+    }
+    .grant-card-title {
+        font-size: 12px;
+    }
+}
+
+@media (min-width: 1440px) {
     .grants-grid {
-        grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        gap: var(--gi-spacing-xl);
+    }
+    .grant-card-title {
+        font-size: 16px;
     }
 }
 
-@media (min-width: 1025px) and (max-width: 1440px) {
-    .grants-grid {
-        grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
-    }
-}
-
-@media (min-width: 1441px) {
-    .grants-grid {
-        grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-        padding: 1.5rem;
-    }
-}
-
-/* ============================================
-   ♿ Accessibility
-============================================ */
-.grant-btn-compact:focus,
+.ai-assist-btn:focus,
+.card-link:focus,
+.card-bookmark:focus,
 .grant-ai-chat-send:focus,
 .grant-ai-suggestion:focus,
 .grant-ai-modal-close:focus {
-    outline: 2px solid var(--gi-yellow);
+    outline: 2px solid var(--gi-color-accent);
     outline-offset: 2px;
 }
 
-/* ============================================
-   🎨 Card Animations
-============================================ */
 @keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .grant-card-unified {
@@ -953,25 +955,19 @@ $assets_loaded = false;
 .grant-card-unified:nth-child(7) { animation-delay: 0.21s; }
 .grant-card-unified:nth-child(8) { animation-delay: 0.24s; }
 
-/* ============================================
-   🖨️ Print Styles
-============================================ */
 @media print {
     .grant-card-unified {
         break-inside: avoid;
         page-break-inside: avoid;
-        border: 1px solid var(--gi-gray-300);
+        border: 1px solid var(--gi-color-border);
     }
-    
-    .grant-btn-compact,
+    .ai-assist-btn,
+    .card-bookmark,
     .grant-ai-modal {
         display: none !important;
     }
 }
 
-/* ============================================
-   🎯 User Selection
-============================================ */
 .grant-card-unified * {
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -979,9 +975,9 @@ $assets_loaded = false;
     user-select: none;
 }
 
-.grant-title-compact a,
-.grant-summary-compact,
-.grant-detail-text,
+.grant-card-title a,
+.card-org,
+.card-ai-summary-text,
 .grant-ai-message-content {
     -webkit-user-select: text;
     -moz-user-select: text;
@@ -991,13 +987,10 @@ $assets_loaded = false;
 </style>
 
 <script>
-// ============================================
-// AI機能 - 機能はそのまま維持
-// ============================================
 (function() {
     'use strict';
     
-    console.log('🚀 Grant AI Chat Script Loaded v17.0');
+    console.log('🚀 Grant AI Chat Script v20.1');
     
     let currentEscHandler = null;
     
@@ -1015,24 +1008,28 @@ $assets_loaded = false;
             existingModal.remove();
         }
         
+        const isMobileView = window.innerWidth < 768;
+        
         const modalHTML = `
             <div class="grant-ai-modal" id="grant-ai-modal">
                 <div class="grant-ai-modal-overlay"></div>
                 <div class="grant-ai-modal-container">
                     <div class="grant-ai-modal-header">
-                        <div class="grant-ai-modal-title">
-                            <svg class="grant-ai-modal-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                                <circle cx="9" cy="10" r="1"/>
-                                <circle cx="15" cy="10" r="1"/>
-                            </svg>
-                            <span>AI助成金アシスタント</span>
+                        <div class="assistant-avatar">
+                            <div class="avatar-ring"></div>
+                            <span class="avatar-icon">AI</span>
                         </div>
-                        <div class="grant-ai-modal-subtitle">${escapeHtml(grantTitle)}</div>
+                        <div class="assistant-info">
+                            <h3 class="assistant-name">補助金AIアシスタント</h3>
+                            <span class="assistant-status">
+                                <span class="status-dot"></span>
+                                オンライン
+                            </span>
+                        </div>
                         <button class="grant-ai-modal-close" aria-label="閉じる">
-                            <svg class="grant-icon-compact" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="18" y1="6" x2="6" y2="18"/>
-                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <line x1="15" y1="5" x2="5" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="5" y1="5" x2="15" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
                         </button>
                     </div>
@@ -1040,45 +1037,66 @@ $assets_loaded = false;
                         <div class="grant-ai-chat-messages" id="ai-chat-messages-${postId}">
                             <div class="grant-ai-message grant-ai-message--assistant">
                                 <div class="grant-ai-message-avatar">
-                                    <svg class="grant-icon-compact" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M12 2v20M2 12h20"/>
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <rect x="4" y="6" width="16" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
+                                        <path d="M9 10h6M9 14h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                        <circle cx="12" cy="3" r="1" fill="currentColor"/>
                                     </svg>
                                 </div>
                                 <div class="grant-ai-message-content">
-                                    こんにちは！この助成金について何でもお聞きください。申請条件、必要書類、申請方法、対象経費など、詳しくお答えします。
+                                    <p style="margin: 0 0 12px 0;">こんにちは！「<strong>${escapeHtml(grantTitle)}</strong>」について、どのようなことをお聞きしたいですか？</p>
                                 </div>
                             </div>
                         </div>
+                        
                         <div class="grant-ai-chat-input-container">
+                            <div class="typing-indicator" id="typing-indicator-${postId}">
+                                <span></span><span></span><span></span>
+                            </div>
                             <div class="grant-ai-chat-input-wrapper">
                                 <textarea 
                                     class="grant-ai-chat-input" 
                                     id="ai-chat-input-${postId}"
-                                    placeholder="例：申請条件は何ですか？"
-                                    rows="2"
+                                    placeholder="質問を入力してください"
+                                    rows="1"
                                     aria-label="質問を入力"></textarea>
                                 <button 
                                     class="grant-ai-chat-send" 
                                     id="ai-chat-send-${postId}"
                                     aria-label="送信">
-                                    <svg class="grant-icon-compact" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <line x1="22" y1="2" x2="11" y2="13"/>
-                                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                        <path d="M18 2L9 11M18 2l-6 16-3-7-7-3 16-6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                     </svg>
+                                    <span class="btn-text-desktop">送信</span>
                                 </button>
                             </div>
+                            
                             <div class="grant-ai-chat-suggestions">
-                                <button class="grant-ai-suggestion" data-question="申請条件を詳しく教えてください">
-                                    申請条件は？
+                                <button class="grant-ai-suggestion" data-question="申請の流れを教えて">
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                        <path d="M1 7h12M7 1v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                    申請の流れ
                                 </button>
-                                <button class="grant-ai-suggestion" data-question="必要な書類を教えてください">
-                                    必要書類は？
+                                <button class="grant-ai-suggestion" data-question="必要書類は？">
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                        <rect x="2" y="1" width="10" height="12" rx="1" stroke="currentColor" stroke-width="2"/>
+                                        <path d="M4 4h6M4 7h6M4 10h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                    必要書類
                                 </button>
-                                <button class="grant-ai-suggestion" data-question="どんな費用が対象になりますか？">
-                                    対象経費は？
+                                <button class="grant-ai-suggestion" data-question="締切はいつ？">
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                        <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="2"/>
+                                        <path d="M7 4v3l2 1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                    締切確認
                                 </button>
-                                <button class="grant-ai-suggestion" data-question="申請方法を教えてください">
-                                    申請方法は？
+                                <button class="grant-ai-suggestion" data-question="採択率は？">
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                        <path d="M1 10l3-3 3 3 5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    採択率
                                 </button>
                             </div>
                         </div>
@@ -1088,6 +1106,17 @@ $assets_loaded = false;
         `;
         
         document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        const modal = document.getElementById('grant-ai-modal');
+        setTimeout(() => {
+            modal.style.opacity = '1';
+            modal.style.visibility = 'visible';
+            const container = modal.querySelector('.grant-ai-modal-container');
+            if (container) {
+                container.style.transform = isMobileView ? 'translateY(0)' : 'scale(1)';
+            }
+        }, 10);
+        
         setupModalEventListeners(postId);
         
         setTimeout(() => {
@@ -1116,6 +1145,11 @@ $assets_loaded = false;
                     sendAIQuestion(postId);
                 }
             });
+            
+            input.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
         }
         
         modal.querySelectorAll('.grant-ai-suggestion').forEach(btn => {
@@ -1123,6 +1157,33 @@ $assets_loaded = false;
                 selectSuggestion(postId, this.getAttribute('data-question'));
             });
         });
+        
+        if (window.innerWidth < 768) {
+            let startY = 0;
+            let currentY = 0;
+            const container = modal.querySelector('.grant-ai-modal-container');
+            
+            container.addEventListener('touchstart', (e) => {
+                startY = e.touches[0].clientY;
+            }, { passive: true });
+            
+            container.addEventListener('touchmove', (e) => {
+                currentY = e.touches[0].clientY;
+                const diff = currentY - startY;
+                if (diff > 0) {
+                    container.style.transform = `translateY(${diff}px)`;
+                }
+            }, { passive: true });
+            
+            container.addEventListener('touchend', () => {
+                const diff = currentY - startY;
+                if (diff > 100) {
+                    closeAIChatModal();
+                } else {
+                    container.style.transform = 'translateY(0)';
+                }
+            }, { passive: true });
+        }
         
         currentEscHandler = (e) => {
             if (e.key === 'Escape') closeAIChatModal();
@@ -1134,6 +1195,12 @@ $assets_loaded = false;
         const modal = document.querySelector('.grant-ai-modal');
         if (modal) {
             modal.style.opacity = '0';
+            modal.style.visibility = 'hidden';
+            const container = modal.querySelector('.grant-ai-modal-container');
+            if (container) {
+                const isMobileView = window.innerWidth < 768;
+                container.style.transform = isMobileView ? 'translateY(100%)' : 'scale(0.9)';
+            }
             setTimeout(() => {
                 modal.remove();
                 if (currentEscHandler) {
@@ -1157,6 +1224,7 @@ $assets_loaded = false;
         const input = document.getElementById(`ai-chat-input-${postId}`);
         const sendBtn = document.getElementById(`ai-chat-send-${postId}`);
         const messagesContainer = document.getElementById(`ai-chat-messages-${postId}`);
+        const typingIndicator = document.getElementById(`typing-indicator-${postId}`);
         
         if (!input || !messagesContainer) return;
         
@@ -1165,23 +1233,27 @@ $assets_loaded = false;
         
         if (sendBtn) {
             sendBtn.disabled = true;
-            sendBtn.innerHTML = '<svg class="grant-icon-compact animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>';
         }
         
         const userMessage = document.createElement('div');
         userMessage.className = 'grant-ai-message grant-ai-message--user';
         userMessage.innerHTML = `
             <div class="grant-ai-message-avatar">
-                <svg class="grant-icon-compact" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
                 </svg>
             </div>
             <div class="grant-ai-message-content">${escapeHtml(question)}</div>
         `;
         messagesContainer.appendChild(userMessage);
         input.value = '';
+        input.style.height = 'auto';
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+        if (typingIndicator) {
+            typingIndicator.classList.add('active');
+        }
         
         const formData = new FormData();
         formData.append('action', 'handle_grant_ai_question');
@@ -1197,50 +1269,38 @@ $assets_loaded = false;
         })
         .then(response => response.json())
         .then(data => {
-            const loadingMessage = document.createElement('div');
-            loadingMessage.className = 'grant-ai-message grant-ai-message--assistant';
-            loadingMessage.innerHTML = `
+            if (typingIndicator) {
+                typingIndicator.classList.remove('active');
+            }
+            
+            const assistantMessage = document.createElement('div');
+            assistantMessage.className = 'grant-ai-message grant-ai-message--assistant';
+            assistantMessage.innerHTML = `
                 <div class="grant-ai-message-avatar">
-                    <svg class="grant-icon-compact animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <rect x="4" y="6" width="16" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
+                        <path d="M9 10h6M9 14h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="12" cy="3" r="1" fill="currentColor"/>
                     </svg>
                 </div>
-                <div class="grant-ai-message-content">
-                    <div class="grant-ai-typing">
-                        <span></span><span></span><span></span>
-                    </div>
-                </div>
+                <div class="grant-ai-message-content">${data.success ? escapeHtml(data.data.response) : '申し訳ございません。エラーが発生しました。'}</div>
             `;
-            messagesContainer.appendChild(loadingMessage);
+            messagesContainer.appendChild(assistantMessage);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            
-            setTimeout(() => {
-                loadingMessage.remove();
-                
-                const assistantMessage = document.createElement('div');
-                assistantMessage.className = data.success ? 'grant-ai-message grant-ai-message--assistant' : 'grant-ai-message grant-ai-message--error';
-                assistantMessage.innerHTML = `
-                    <div class="grant-ai-message-avatar">
-                        <svg class="grant-icon-compact" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            ${data.success ? '<path d="M12 2v20M2 12h20"/>' : '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'}
-                        </svg>
-                    </div>
-                    <div class="grant-ai-message-content">${data.success ? escapeHtml(data.data.response) : '申し訳ございません。エラーが発生しました。'}</div>
-                `;
-                messagesContainer.appendChild(assistantMessage);
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }, 1500);
         })
         .catch(error => {
             console.error('Error:', error);
+            if (typingIndicator) {
+                typingIndicator.classList.remove('active');
+            }
             const errorMessage = document.createElement('div');
-            errorMessage.className = 'grant-ai-message grant-ai-message--error';
+            errorMessage.className = 'grant-ai-message grant-ai-message--assistant';
             errorMessage.innerHTML = `
                 <div class="grant-ai-message-avatar">
-                    <svg class="grant-icon-compact" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="12" y1="8" x2="12" y2="12"/>
-                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                        <line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                     </svg>
                 </div>
                 <div class="grant-ai-message-content">エラーが発生しました。</div>
@@ -1251,14 +1311,13 @@ $assets_loaded = false;
         .finally(() => {
             if (sendBtn) {
                 sendBtn.disabled = false;
-                sendBtn.innerHTML = '<svg class="grant-icon-compact" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
             }
             input.focus();
         });
     }
     
     document.addEventListener('click', function(e) {
-        const aiBtn = e.target.closest('.grant-btn-compact--ai');
+        const aiBtn = e.target.closest('.ai-assist-btn');
         if (aiBtn) {
             e.preventDefault();
             e.stopPropagation();
@@ -1273,122 +1332,96 @@ $assets_loaded = false;
 })();
 </script>
 
-<?php endif; ?>
-
-<!-- Card HTML - 機能はそのまま -->
 <article class="grant-card-unified <?php echo esc_attr($view_class); ?>" 
          data-post-id="<?php echo esc_attr($post_id); ?>"
          role="article"
          aria-label="<?php echo esc_attr($title); ?>">
     
-    <header class="grant-compact-header <?php echo $application_status === 'closed' ? 'status--closed' : ''; ?> <?php echo !empty($deadline_info) && $deadline_info['class'] === 'critical' ? 'status--urgent' : ''; ?>">
-        <div class="grant-status-compact">
-            <span class="grant-status-dot"></span>
-            <span><?php echo esc_html($status_display); ?></span>
-        </div>
-        <?php if (!empty($deadline_info)): ?>
-        <div class="grant-deadline-compact <?php echo esc_attr($deadline_info['class']); ?>">
-            <span><?php echo esc_html($deadline_info['text']); ?></span>
-        </div>
-        <?php endif; ?>
-    </header>
+    <?php if ($is_featured): ?>
+    <div class="card-badge">注目</div>
+    <?php endif; ?>
     
-    <div class="grant-card-content">
-        <?php if ($main_category): ?>
-        <span class="grant-category-compact"><?php echo esc_html($main_category); ?></span>
-        <?php endif; ?>
-        
-        <h3 class="grant-title-compact">
+    <div class="grant-card-header">
+        <h3 class="grant-card-title">
             <a href="<?php echo esc_url($permalink); ?>" aria-label="<?php echo esc_attr($title); ?>の詳細">
                 <?php echo esc_html($title); ?>
             </a>
         </h3>
-        
-        <?php if ($ai_summary || $excerpt): ?>
-        <p class="grant-summary-compact">
-            <?php echo esc_html(wp_trim_words($ai_summary ?: $excerpt, 20, '...')); ?>
-        </p>
-        <?php endif; ?>
-        
-        <div class="grant-info-grid">
-            <div class="grant-info-item">
-                <span class="grant-info-label">助成額</span>
-                <span class="grant-info-value"><?php echo $formatted_amount ? esc_html($formatted_amount) : '要確認'; ?></span>
-            </div>
-            <div class="grant-info-item">
-                <span class="grant-info-label">地域</span>
-                <span class="grant-info-value"><?php echo esc_html($region_display); ?></span>
-            </div>
-        </div>
-        
-        <div class="grant-details-compact">
-            <?php if ($organization): ?>
-            <div class="grant-detail-item">
-                <svg class="grant-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                </svg>
-                <span class="grant-detail-label">実施:</span>
-                <span class="grant-detail-text"><?php echo esc_html(wp_trim_words($organization, 8, '...')); ?></span>
-            </div>
-            <?php endif; ?>
-            
-            <?php if ($grant_target): ?>
-            <div class="grant-detail-item">
-                <svg class="grant-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                </svg>
-                <span class="grant-detail-label">対象:</span>
-                <span class="grant-detail-text"><?php echo esc_html(wp_trim_words($grant_target, 12, '...')); ?></span>
-            </div>
-            <?php endif; ?>
-            
-            <?php if ($grant_difficulty): ?>
-            <div class="grant-detail-item">
-                <svg class="grant-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                </svg>
-                <span class="grant-detail-label">難易度:</span>
-                <span class="grant-detail-text"><?php echo esc_html($difficulty_data['label']); ?> <?php echo esc_html($difficulty_data['icon']); ?></span>
-            </div>
-            <?php endif; ?>
-        </div>
+        <button class="card-bookmark" aria-label="ブックマーク">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path d="M3 2h12v14l-6-3-6 3V2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+        </button>
     </div>
     
-    <footer class="grant-actions-compact">
-        <a href="<?php echo esc_url($permalink); ?>" class="grant-btn-compact grant-btn-compact--primary" role="button" aria-label="<?php echo esc_attr($title); ?>の詳細を見る">
-            <svg class="grant-icon-compact" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M9 18l6-6-6-6"/>
+    <?php if ($ai_summary): ?>
+    <div class="card-ai-summary">
+        <p class="card-ai-summary-text"><?php echo esc_html($ai_summary); ?></p>
+    </div>
+    <?php endif; ?>
+    
+    <div class="card-meta">
+        <span class="meta-item">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="2"/>
+                <path d="M7 4v3h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
-            <span>詳細</span>
-        </a>
-        
-        <button class="grant-btn-compact grant-btn-compact--ai" 
+            <span class="meta-label">最大</span>
+            <span class="meta-value"><?php echo $formatted_amount ? esc_html($formatted_amount) : '未定'; ?></span>
+        </span>
+        <span class="meta-item">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <rect x="2" y="3" width="10" height="9" rx="1" stroke="currentColor" stroke-width="2"/>
+                <path d="M4 1v2M10 1v2M2 6h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span class="meta-label">締切</span>
+            <span class="meta-value"><?php echo !empty($deadline_info) ? esc_html($deadline_info['text']) : '随時'; ?></span>
+        </span>
+    </div>
+    
+    <?php if ($organization): ?>
+    <p class="card-org">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <rect x="1" y="2" width="10" height="8" rx="1" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M3 5h6M3 7h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <?php echo esc_html($organization); ?>
+    </p>
+    <?php endif; ?>
+    
+    <?php if ($adoption_rate > 0): ?>
+    <div class="card-rate">
+        <div class="rate-bar">
+            <div class="rate-fill" style="width: <?php echo $adoption_rate; ?>%"></div>
+        </div>
+        <span class="rate-text">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M1 8l2.5-2.5L5 7l4-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            採択率 <?php echo $adoption_rate; ?>%
+        </span>
+    </div>
+    <?php endif; ?>
+    
+    <div class="card-actions">
+        <button class="ai-assist-btn" 
                 data-post-id="<?php echo esc_attr($post_id); ?>" 
                 data-grant-title="<?php echo esc_attr($title); ?>"
                 type="button"
                 role="button"
-                aria-label="AIに質問する"
-                title="AIに質問">
-            <svg class="grant-icon-compact" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                aria-label="AIに質問する">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="4" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="2"/>
+                <path d="M5 7h6M5 10h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="8" cy="2" r="1" fill="currentColor"/>
             </svg>
+            <span>AI質問</span>
         </button>
-        
-        <?php if ($official_url): ?>
-        <a href="<?php echo esc_url($official_url); ?>" 
-           class="grant-btn-compact grant-btn-compact--secondary" 
-           target="_blank" 
-           rel="noopener noreferrer" 
-           role="button" 
-           aria-label="公式サイトを開く"
-           title="公式サイト">
-            <svg class="grant-icon-compact" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                <polyline points="15 3 21 3 21 9"/>
-                <line x1="10" y1="14" x2="21" y2="3"/>
+        <a href="<?php echo esc_url($permalink); ?>" class="card-link" aria-label="詳細を見る">
+            <span>詳細を見る</span>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </a>
-        <?php endif; ?>
-    </footer>
+    </div>
 </article>
