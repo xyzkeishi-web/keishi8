@@ -3,8 +3,16 @@
  * 全JSを統合・最適化したメインスクリプト
  * 重複削除、パフォーマンス最適化済み
  * 
- * @version 1.0.0
- * @date 2025-10-05
+ * @version 1.0.1
+ * @date 2025-10-19
+ * 
+ * CHANGELOG:
+ * v1.0.1 (2025-10-19):
+ * - Fixed filter functionality conflicts with archive-grant.php
+ * - Archive pages now use their own comprehensive filter system
+ * - Enhanced scroll restoration system with dual-storage (History API + SessionStorage)
+ * - Added automatic scroll position saving during scroll events
+ * - Browser back button now properly restores scroll position
  */
 
 /**
@@ -74,6 +82,7 @@ const GrantInsight = {
             this.setupPerformance();
             this.setupAnimations();
             this.setupForms();
+            this.setupScrollRestoration(); // スクロール位置の復元
             
             this.initialized = true;
             this.debug('Grant Insight initialized successfully');
@@ -394,13 +403,16 @@ cacheElements() {
     },
 
     /**
-     * 検索実行
+     * 検索実行 - スクロール位置を保存
      */
     executeSearch(query) {
         const input = this.elements.searchInputs[0];
         if (input) {
             input.value = query;
         }
+        
+        // 現在のスクロール位置を保存
+        window.history.replaceState({ scrollY: window.scrollY }, '', window.location.href);
         
         // 検索結果ページに移動またはAJAXで結果更新
         const currentPath = window.location.pathname;
@@ -432,6 +444,25 @@ cacheElements() {
      * ==========================================================================
      */
     setupFilters() {
+        // archive-grant.php has its own comprehensive filter system embedded in the template
+        // This unified filter system is for OTHER pages (e.g., single grant pages, front page)
+        // We should NOT interfere with archive page filters at all
+        
+        // Check if we're on an archive page - if so, skip ALL filter setup
+        const isGrantArchive = document.body.classList.contains('post-type-archive-grant') ||
+                               document.body.classList.contains('tax-grant_category') ||
+                               document.body.classList.contains('tax-grant_prefecture') ||
+                               document.body.classList.contains('tax-grant_municipality');
+        
+        if (isGrantArchive) {
+            this.debug('Grant archive detected - unified filters disabled, archive inline JS will handle');
+            // Don't set up ANY handlers that might interfere
+            return;
+        }
+        
+        // Only run for non-archive pages
+        this.debug('Setting up unified filters for non-archive page');
+        
         // フィルターボタンのイベント
         this.elements.filterButtons.forEach(button => {
             button.addEventListener('click', () => {
@@ -537,7 +568,7 @@ cacheElements() {
     },
 
     /**
-     * URLの更新（履歴管理）
+     * URLの更新（履歴管理）- スクロール位置を保存
      */
     updateURL(filters) {
         const params = new URLSearchParams();
@@ -549,7 +580,10 @@ cacheElements() {
         });
         
         const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
-        window.history.pushState({}, '', newUrl);
+        
+        // スクロール位置を保存してから履歴を更新
+        const scrollPosition = window.scrollY;
+        window.history.pushState({ scrollY: scrollPosition }, '', newUrl);
     },
 
     /**
@@ -1634,6 +1668,137 @@ cacheElements() {
         document.querySelectorAll('.gi-modal-active, .gi-popup-active').forEach(modal => {
             modal.classList.remove('gi-modal-active', 'gi-popup-active');
         });
+    },
+
+    /**
+     * ==========================================================================
+     * スクロール位置の保存と復元（戻るボタン対応）- 強化版
+     * ==========================================================================
+     */
+    setupScrollRestoration() {
+        // ブラウザのデフォルト動作を完全に無効化
+        if ('scrollRestoration' in window.history) {
+            window.history.scrollRestoration = 'manual';
+        }
+
+        // SessionStorageにもバックアップを保存
+        const STORAGE_KEY = 'gi_scroll_positions';
+        
+        // スクロール位置を保存（複数の方法で）
+        const saveScrollPosition = () => {
+            const url = window.location.href;
+            const scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+            
+            // 1. History APIに保存
+            try {
+                const currentState = window.history.state || {};
+                window.history.replaceState(
+                    { ...currentState, scrollY: scrollY },
+                    '',
+                    window.location.href
+                );
+            } catch (e) {
+                this.debug('Failed to save to history:', e);
+            }
+            
+            // 2. SessionStorageに保存（バックアップ）
+            try {
+                const positions = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '{}');
+                positions[url] = scrollY;
+                sessionStorage.setItem(STORAGE_KEY, JSON.stringify(positions));
+            } catch (e) {
+                this.debug('Failed to save to sessionStorage:', e);
+            }
+            
+            this.debug(`Scroll position saved: ${scrollY}px for ${url}`);
+        };
+
+        // スクロール位置を復元（複数の方法から）
+        const restoreScrollPosition = () => {
+            let scrollY = 0;
+            const url = window.location.href;
+            
+            // 1. History APIから復元を試みる
+            if (window.history.state && typeof window.history.state.scrollY === 'number') {
+                scrollY = window.history.state.scrollY;
+                this.debug(`Restored from history.state: ${scrollY}px`);
+            }
+            // 2. SessionStorageから復元を試みる（フォールバック）
+            else {
+                try {
+                    const positions = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '{}');
+                    if (typeof positions[url] === 'number') {
+                        scrollY = positions[url];
+                        this.debug(`Restored from sessionStorage: ${scrollY}px`);
+                    }
+                } catch (e) {
+                    this.debug('Failed to restore from sessionStorage:', e);
+                }
+            }
+            
+            // スクロール位置を復元
+            if (scrollY > 0) {
+                // 複数のメソッドで試行
+                requestAnimationFrame(() => {
+                    window.scrollTo(0, scrollY);
+                    document.documentElement.scrollTop = scrollY;
+                    document.body.scrollTop = scrollY;
+                    this.debug(`Scroll restored to: ${scrollY}px`);
+                });
+            }
+        };
+
+        // 定期的にスクロール位置を保存（スクロール中）
+        let scrollTimeout;
+        const handleScroll = () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                saveScrollPosition();
+            }, 100);
+        };
+        window.addEventListener('scroll', handleScroll, { passive: true });
+
+        // ページ離脱前に保存
+        window.addEventListener('beforeunload', saveScrollPosition);
+        window.addEventListener('pagehide', saveScrollPosition);
+
+        // リンククリック時に保存
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('a[href]');
+            if (link && !link.hasAttribute('target')) {
+                const href = link.getAttribute('href');
+                // アンカーリンク以外の内部リンク
+                if (href && !href.startsWith('#') && 
+                    (href.startsWith('/') || href.startsWith(window.location.origin))) {
+                    saveScrollPosition();
+                }
+            }
+        }, true); // キャプチャフェーズで実行
+
+        // 戻る/進むボタンでの復元
+        window.addEventListener('popstate', (e) => {
+            this.debug('popstate triggered', e.state);
+            // 少し遅延させてDOMが更新されてから復元
+            setTimeout(() => {
+                restoreScrollPosition();
+            }, 10);
+        });
+
+        // ページ読み込み完了時に復元
+        if (document.readyState === 'complete') {
+            setTimeout(restoreScrollPosition, 10);
+        } else {
+            window.addEventListener('load', () => {
+                setTimeout(restoreScrollPosition, 10);
+            });
+        }
+
+        // DOMContentLoaded時にも復元試行
+        if (document.readyState !== 'loading') {
+            setTimeout(restoreScrollPosition, 10);
+        }
+
+        this.debug('Enhanced scroll restoration initialized');
     }
 };
 

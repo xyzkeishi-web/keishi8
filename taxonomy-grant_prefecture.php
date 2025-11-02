@@ -21,6 +21,8 @@ $prefecture_count = $current_prefecture->count;
 $current_year = date('Y');
 $page_title = $prefecture_name . 'の助成金・補助金一覧｜' . $current_year . '年度最新情報';
 $page_description = $prefecture_name . 'で利用できる助成金・補助金情報を' . $prefecture_count . '件掲載中。地域特有の制度から国の制度まで、' . $current_year . '年度の最新情報をお届けします。';
+$canonical_url = get_term_link($current_prefecture);
+$og_image = get_template_directory_uri() . '/assets/images/og-grant-prefecture.jpg';
 
 // カテゴリーデータ
 $categories = get_terms([
@@ -58,7 +60,35 @@ $breadcrumbs = [
 ];
 ?>
 
-<!-- SEOメタ情報 -->
+<!-- SEO Meta Tags -->
+<title><?php echo esc_html($page_title); ?></title>
+<meta name="title" content="<?php echo esc_attr($page_title); ?>">
+<meta name="description" content="<?php echo esc_attr($page_description); ?>">
+<meta name="keywords" content="<?php echo esc_attr($prefecture_name); ?>,助成金,補助金,<?php echo $current_year; ?>年度,地域,自治体">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<link rel="canonical" href="<?php echo esc_url($canonical_url); ?>">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="<?php echo esc_url($canonical_url); ?>">
+<meta property="og:title" content="<?php echo esc_attr($page_title); ?>">
+<meta property="og:description" content="<?php echo esc_attr($page_description); ?>">
+<meta property="og:image" content="<?php echo esc_url($og_image); ?>">
+<meta property="og:site_name" content="<?php echo esc_attr(get_bloginfo('name')); ?>">
+<meta property="og:locale" content="ja_JP">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="<?php echo esc_url($canonical_url); ?>">
+<meta name="twitter:title" content="<?php echo esc_attr($page_title); ?>">
+<meta name="twitter:description" content="<?php echo esc_attr($page_description); ?>">
+<meta name="twitter:image" content="<?php echo esc_url($og_image); ?>">
+
+<!-- Preconnect for Performance -->
+<link rel="preconnect" href="<?php echo admin_url(); ?>">
+<link rel="dns-prefetch" href="<?php echo admin_url(); ?>">
+
+<!-- SEO構造化データ（JSON-LD） -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -94,7 +124,69 @@ $breadcrumbs = [
       "addressCountry": "JP",
       "addressRegion": "<?php echo esc_js($prefecture_name); ?>"
     }
-  }
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "<?php echo esc_js(get_bloginfo('name')); ?>",
+    "url": "<?php echo esc_js(home_url()); ?>"
+  },
+  "inLanguage": "ja-JP",
+  "datePublished": "<?php echo date('c'); ?>",
+  "dateModified": "<?php echo date('c'); ?>"
+}
+</script>
+
+<!-- LocalBusiness構造化データ（地域SEO） -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "GovernmentService",
+  "name": "<?php echo esc_js($prefecture_name); ?>の助成金・補助金",
+  "description": "<?php echo esc_js($page_description); ?>",
+  "provider": {
+    "@type": "GovernmentOrganization",
+    "name": "<?php echo esc_js($prefecture_name); ?>庁"
+  },
+  "areaServed": {
+    "@type": "AdministrativeArea",
+    "name": "<?php echo esc_js($prefecture_name); ?>",
+    "addressCountry": "JP"
+  },
+  "serviceType": "助成金・補助金情報提供"
+}
+</script>
+
+<!-- FAQ構造化データ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "<?php echo esc_js($prefecture_name); ?>の助成金はどのように検索できますか?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "当ページでは<?php echo esc_js($prefecture_name); ?>で利用できる助成金・補助金を<?php echo intval($prefecture_count); ?>件掲載しています。カテゴリー、実施機関、募集状況などで絞り込み検索が可能です。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "<?php echo esc_js($prefecture_name); ?>独自の助成金制度はありますか?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "はい。<?php echo esc_js($prefecture_name); ?>では地域産業の振興や地域課題の解決を目的とした独自の助成金制度を実施しています。県の制度と市町村の制度を組み合わせて活用することも可能です。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "<?php echo esc_js($prefecture_name); ?>の助成金申請窓口はどこですか?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "各助成金により申請窓口が異なります。<?php echo esc_js($prefecture_name); ?>庁、各市町村、商工会議所、商工会などが窓口となります。詳細は各助成金の詳細ページでご確認ください。"
+      }
+    }
+  ]
 }
 </script>
 
@@ -490,6 +582,61 @@ $breadcrumbs = [
     </section>
     <?php endif; ?>
 
+    <!-- 内部リンクセクション -->
+    <section class="internal-links-section">
+        <div class="container">
+            <h2 class="section-title"><?php echo esc_html($prefecture_name); ?>の助成金申請に役立つ情報</h2>
+            <div class="internal-links-grid">
+                <a href="<?php echo home_url('/grant-howto/'); ?>" class="internal-link-card">
+                    <div class="link-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                    </div>
+                    <h3>助成金申請の基礎知識</h3>
+                    <p>初めての方でも分かる申請の流れと準備</p>
+                </a>
+                <a href="<?php echo home_url('/grant-faq/'); ?>" class="internal-link-card">
+                    <div class="link-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                    </div>
+                    <h3>よくある質問</h3>
+                    <p>助成金に関する疑問をQ&amp;A形式で解決</p>
+                </a>
+                <a href="<?php echo home_url('/prefecture/' . $prefecture_slug . '/support/'); ?>" class="internal-link-card">
+                    <div class="link-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
+                    <h3><?php echo esc_html($prefecture_name); ?>のサポート窓口</h3>
+                    <p>商工会・商工会議所などの相談窓口</p>
+                </a>
+                <a href="<?php echo home_url('/grant-success-stories/'); ?>" class="internal-link-card">
+                    <div class="link-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                    </div>
+                    <h3>採択事例</h3>
+                    <p><?php echo esc_html($prefecture_name); ?>の成功事例を紹介</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
     <!-- SEO用追加コンテンツ -->
     <section class="seo-content">
         <div class="container">
@@ -599,7 +746,7 @@ $breadcrumbs = [
 
 /* ヒーローセクション */
 .prefecture-hero {
-    padding: 40px 0 60px;
+    padding: 40px 0 20px;
     background: linear-gradient(135deg, #f0f8ff 0%, #ffffff 100%);
     border-bottom: 1px solid #e0e0e0;
 }
@@ -750,7 +897,7 @@ $breadcrumbs = [
 
 /* フィルターセクション */
 .prefecture-filters {
-    padding: 50px 0;
+    padding: 30px 0;
     background: #ffffff;
     border-bottom: 1px solid #e0e0e0;
 }
@@ -1390,8 +1537,110 @@ $breadcrumbs = [
     margin: 0 0 20px 0;
 }
 
+/* 内部リンクセクション */
+.internal-links-section {
+    padding: 60px 0;
+    background: var(--color-gray-50);
+    border-top: 1px solid var(--color-gray-200);
+}
+
+.internal-links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.internal-link-card {
+    background: var(--color-white);
+    border: 2px solid var(--color-gray-200);
+    border-radius: 12px;
+    padding: 24px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-height: 200px;
+}
+
+.internal-link-card:hover {
+    border-color: var(--color-yellow-500);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+}
+
+.internal-link-card .link-icon {
+    width: 56px;
+    height: 56px;
+    background: var(--color-black);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-white);
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+}
+
+.internal-link-card:hover .link-icon {
+    background: var(--color-yellow-600);
+    transform: scale(1.1);
+}
+
+.internal-link-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-black);
+    margin: 0 0 8px 0;
+}
+
+.internal-link-card p {
+    font-size: 14px;
+    color: var(--color-gray-600);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* アクセシビリティ強化 */
+.prefecture-btn,
+.category-btn,
+.region-tab,
+.view-toggle,
+.search-btn,
+.filter-select,
+.category-toggle,
+.detail-toggle {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+a:focus,
+button:focus,
+input:focus,
+select:focus {
+    outline: 2px solid var(--color-yellow-500);
+    outline-offset: 2px;
+}
+
+img[loading="lazy"] {
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+img[loading="lazy"].loaded {
+    opacity: 1;
+}
+
 /* レスポンシブ対応 */
 @media (max-width: 768px) {
+    .internal-links-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
     .prefecture-title {
         font-size: 32px;
     }

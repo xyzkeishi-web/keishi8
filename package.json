@@ -1,0 +1,35 @@
+{
+  "name": "joseikin-insight-theme",
+  "version": "9.2.0",
+  "description": "助成金・補助金インサイト WordPressテーマ - パフォーマンス最適化版",
+  "private": true,
+  "scripts": {
+    "dev": "vite --config config/vite.config.js",
+    "build": "vite build --config config/vite.config.js",
+    "preview": "vite preview --config config/vite.config.js",
+    "build:css": "postcss assets/css/main.css -o assets/dist/css/main.min.css --config config/postcss.config.js",
+    "build:js": "terser assets/js/**/*.js -o assets/dist/js/main.min.js --compress --mangle",
+    "watch": "vite build --watch --config config/vite.config.js",
+    "clean": "rm -rf assets/dist"
+  },
+  "devDependencies": {
+    "vite": "^5.0.10",
+    "tailwindcss": "^3.4.17",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.33",
+    "postcss-cli": "^11.0.0",
+    "cssnano": "^6.0.3",
+    "terser": "^5.26.0",
+    "@rollup/plugin-replace": "^5.0.5"
+  },
+  "dependencies": {
+    "@fontsource/inter": "^5.0.16",
+    "@fontsource/outfit": "^5.0.16",
+    "@fontsource/noto-sans-jp": "^5.0.18"
+  },
+  "browserslist": [
+    "> 0.5%",
+    "last 2 versions",
+    "not dead"
+  ]
+}

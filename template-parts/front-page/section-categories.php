@@ -243,16 +243,16 @@ if (function_exists('gi_get_cached_stats')) {
 /* ヘッダー */
 .giac-header {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 32px;
 }
 
 .giac-title {
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .giac-title-en {
     display: block;
-    font-size: 32px;
+    font-size: 26px;
     font-weight: 900;
     color: #000000;
     letter-spacing: 0.05em;
@@ -261,24 +261,24 @@ if (function_exists('gi_get_cached_stats')) {
 }
 
 .giac-title-ja {
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 700;
     color: #000000;
     line-height: 1.4;
-    margin: 12px 0;
+    margin: 10px 0;
 }
 
 .giac-yellow-line {
-    width: 64px;
+    width: 56px;
     height: 3px;
     background: #ffeb3b;
-    margin: 0 auto 13px;
+    margin: 0 auto 11px;
     border-radius: 2px;
     box-shadow: 0 2px 8px rgba(255, 235, 59, 0.4);
 }
 
 .giac-subtitle {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
     color: #333333;
     line-height: 1.6;
@@ -287,19 +287,19 @@ if (function_exists('gi_get_cached_stats')) {
 /* メインカテゴリー */
 .giac-main-categories {
     display: grid;
-    gap: 13px;
-    margin-bottom: 32px;
+    gap: 10px;
+    margin-bottom: 26px;
 }
 
 .giac-category-card {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 13px;
-    padding: 16px;
+    gap: 10px;
+    padding: 12px;
     background: #ffffff;
     border: 2px solid #000000;
-    border-radius: 13px;
+    border-radius: 10px;
     text-decoration: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
@@ -308,10 +308,10 @@ if (function_exists('gi_get_cached_stats')) {
 
 .giac-card-number {
     position: absolute;
-    top: -8px;
-    right: -8px;
-    width: 32px;
-    height: 32px;
+    top: -6px;
+    right: -6px;
+    width: 26px;
+    height: 26px;
     background: #ffeb3b;
     color: #000000;
     border: 2px solid #000000;
@@ -319,7 +319,7 @@ if (function_exists('gi_get_cached_stats')) {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 900;
     letter-spacing: -0.02em;
     z-index: 2;
@@ -354,15 +354,15 @@ if (function_exists('gi_get_cached_stats')) {
 
 .giac-card-icon {
     flex-shrink: 0;
-    width: 45px;
-    height: 45px;
+    width: 38px;
+    height: 38px;
     background: #000000;
-    border-radius: 10px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #ffffff;
-    font-size: 19px;
+    font-size: 16px;
     transition: all 0.3s ease;
 }
 
@@ -376,30 +376,30 @@ if (function_exists('gi_get_cached_stats')) {
 }
 
 .giac-card-title {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     color: #000000;
     line-height: 1.4;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
 }
 
 .giac-card-count {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
     color: #666666;
 }
 
 .giac-card-arrow {
     flex-shrink: 0;
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     background: #f5f5f5;
-    border-radius: 8px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #000000;
-    font-size: 14px;
+    font-size: 12px;
     transition: all 0.3s ease;
 }
 
@@ -537,66 +537,66 @@ if (function_exists('gi_get_cached_stats')) {
 /* タブレット */
 @media (min-width: 768px) {
     .giac-categories-section {
-        padding: 80px 0;
+        padding: 64px 0;
     }
     
     .giac-header {
-        margin-bottom: 48px;
+        margin-bottom: 38px;
     }
     
     .giac-title-en {
-        font-size: 44px;
+        font-size: 34px;
     }
     
     .giac-title-ja {
-        font-size: 16px;
+        font-size: 14px;
     }
     
     .giac-subtitle {
-        font-size: 12px;
+        font-size: 11px;
     }
     
     .giac-main-categories {
         grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
-        margin-bottom: 40px;
+        gap: 12px;
+        margin-bottom: 32px;
     }
     
     .giac-category-card {
-        padding: 19px;
+        padding: 14px;
     }
     
     .giac-card-number {
-        width: 28px;
-        height: 28px;
-        font-size: 12px;
-        top: -6px;
-        right: -6px;
+        width: 24px;
+        height: 24px;
+        font-size: 10px;
+        top: -5px;
+        right: -5px;
     }
     
     .giac-card-title {
-        font-size: 13px;
+        font-size: 12px;
     }
     
     .giac-card-count {
-        font-size: 10px;
+        font-size: 9px;
     }
     
     .giac-more-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        gap: 10px;
     }
 }
 
 /* デスクトップ */
 @media (min-width: 1024px) {
     .giac-title-en {
-        font-size: 48px;
+        font-size: 38px;
     }
     
     .giac-main-categories {
         grid-template-columns: repeat(3, 1fr);
-        gap: 19px;
+        gap: 14px;
     }
     
     .giac-category-card:hover {
@@ -612,112 +612,112 @@ if (function_exists('gi_get_cached_stats')) {
 /* スマホ最適化 */
 @media (max-width: 640px) {
     .giac-categories-section {
-        padding: 60px 0;
+        padding: 48px 0;
     }
     
     .giac-container {
-        padding: 0 16px;
+        padding: 0 14px;
     }
     
     .giac-header {
-        margin-bottom: 40px;
+        margin-bottom: 32px;
     }
     
     .giac-title-en {
-        font-size: 36px;
+        font-size: 28px;
         letter-spacing: 0.02em;
     }
     
     .giac-title-ja {
-        font-size: 13px;
-        margin: 8px 0;
+        font-size: 12px;
+        margin: 7px 0;
     }
     
     .giac-yellow-line {
-        width: 60px;
-        margin: 0 auto 12px;
+        width: 52px;
+        margin: 0 auto 10px;
     }
     
     .giac-subtitle {
-        font-size: 12px;
+        font-size: 11px;
     }
     
     .giac-main-categories {
-        gap: 10px;
-        margin-bottom: 26px;
+        gap: 8px;
+        margin-bottom: 20px;
     }
     
     .giac-category-card {
-        padding: 13px;
+        padding: 10px;
     }
     
     .giac-card-number {
-        width: 24px;
-        height: 24px;
-        font-size: 10px;
-        top: -5px;
-        right: -5px;
+        width: 22px;
+        height: 22px;
+        font-size: 9px;
+        top: -4px;
+        right: -4px;
     }
     
     .giac-card-icon {
-        width: 48px;
-        height: 48px;
-        font-size: 20px;
+        width: 36px;
+        height: 36px;
+        font-size: 15px;
     }
     
     .giac-card-title {
-        font-size: 13px;
+        font-size: 11px;
     }
     
     .giac-card-count {
-        font-size: 10px;
+        font-size: 9px;
     }
     
     .giac-more-button {
-        padding: 12px;
-        font-size: 12px;
+        padding: 10px;
+        font-size: 11px;
     }
     
     .giac-more-grid {
-        gap: 8px;
+        gap: 7px;
     }
     
     .giac-mini-card {
-        padding: 12px 14px;
+        padding: 10px 12px;
     }
     
     .giac-mini-card i {
-        font-size: 16px;
+        font-size: 14px;
     }
     
     .giac-mini-title {
-        font-size: 11px;
+        font-size: 10px;
     }
     
     .giac-mini-count {
-        font-size: 11px;
-        padding: 3px 8px;
+        font-size: 10px;
+        padding: 2px 7px;
     }
 }
 
 /* 極小スマホ */
 @media (max-width: 375px) {
     .giac-title-en {
-        font-size: 26px;
+        font-size: 22px;
     }
     
     .giac-title-ja {
-        font-size: 12px;
+        font-size: 11px;
     }
     
     .giac-card-icon {
-        width: 44px;
-        height: 44px;
-        font-size: 18px;
+        width: 34px;
+        height: 34px;
+        font-size: 14px;
     }
     
     .giac-card-title {
-        font-size: 12px;
+        font-size: 10px;
     }
 }
 
@@ -753,24 +753,24 @@ if (function_exists('gi_get_cached_stats')) {
 }
 
 .giac-location-title {
-    font-size: 22px;
+    font-size: 18px;
     font-weight: 900;
     color: var(--color-black);
-    margin: 0 0 8px;
+    margin: 0 0 7px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .giac-location-title i {
     color: var(--color-black);
-    font-size: 24px;
+    font-size: 20px;
 }
 
 .giac-location-subtitle {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--color-gray-600);
-    margin: 0 0 32px;
+    margin: 0 0 26px;
     font-weight: 500;
 }
 
@@ -780,30 +780,30 @@ if (function_exists('gi_get_cached_stats')) {
 }
 
 .giac-selector-title {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
     color: var(--color-black);
-    margin: 0 0 16px;
-    padding-left: 10px;
+    margin: 0 0 13px;
+    padding-left: 8px;
     border-left: 3px solid var(--color-black);
 }
 
 .giac-prefecture-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 16px;
-    margin-bottom: 30px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
 }
 
 .giac-prefecture-card {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 20px;
+    gap: 12px;
+    padding: 14px;
     background: var(--color-white);
     border: 2px solid var(--color-gray-200);
-    border-radius: 16px;
+    border-radius: 12px;
     text-decoration: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
@@ -833,15 +833,15 @@ if (function_exists('gi_get_cached_stats')) {
 
 .giac-prefecture-icon {
     flex-shrink: 0;
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     background: var(--color-black);
-    border-radius: 12px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--color-white);
-    font-size: 20px;
+    font-size: 17px;
     transition: all 0.3s ease;
 }
 
@@ -854,29 +854,29 @@ if (function_exists('gi_get_cached_stats')) {
 }
 
 .giac-prefecture-name {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     color: var(--color-black);
-    margin: 0 0 3px;
+    margin: 0 0 2px;
 }
 
 .giac-prefecture-count {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
     color: var(--color-gray-600);
 }
 
 .giac-prefecture-arrow {
     flex-shrink: 0;
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     background: var(--color-gray-100);
-    border-radius: 8px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--color-gray-600);
-    font-size: 14px;
+    font-size: 12px;
     transition: all 0.3s ease;
 }
 

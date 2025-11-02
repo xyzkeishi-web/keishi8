@@ -21,6 +21,8 @@ $category_count = $current_category->count;
 $current_year = date('Y');
 $page_title = $category_name . 'の助成金・補助金一覧｜' . $current_year . '年度最新情報';
 $page_description = $category_name . 'に関する助成金・補助金情報を' . $category_count . '件掲載中。申請方法から採択のポイントまで、' . $current_year . '年度の最新情報をお届けします。';
+$canonical_url = get_term_link($current_category);
+$og_image = get_template_directory_uri() . '/assets/images/og-grant-category.jpg';
 
 // 都道府県データ
 $prefectures = gi_get_all_prefectures();
@@ -43,7 +45,35 @@ $breadcrumbs = [
 ];
 ?>
 
-<!-- SEOメタ情報 -->
+<!-- SEO Meta Tags -->
+<title><?php echo esc_html($page_title); ?></title>
+<meta name="title" content="<?php echo esc_attr($page_title); ?>">
+<meta name="description" content="<?php echo esc_attr($page_description); ?>">
+<meta name="keywords" content="<?php echo esc_attr($category_name); ?>,助成金,補助金,<?php echo $current_year; ?>年度,申請方法,採択">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<link rel="canonical" href="<?php echo esc_url($canonical_url); ?>">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="<?php echo esc_url($canonical_url); ?>">
+<meta property="og:title" content="<?php echo esc_attr($page_title); ?>">
+<meta property="og:description" content="<?php echo esc_attr($page_description); ?>">
+<meta property="og:image" content="<?php echo esc_url($og_image); ?>">
+<meta property="og:site_name" content="<?php echo esc_attr(get_bloginfo('name')); ?>">
+<meta property="og:locale" content="ja_JP">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="<?php echo esc_url($canonical_url); ?>">
+<meta name="twitter:title" content="<?php echo esc_attr($page_title); ?>">
+<meta name="twitter:description" content="<?php echo esc_attr($page_description); ?>">
+<meta name="twitter:image" content="<?php echo esc_url($og_image); ?>">
+
+<!-- Preconnect for Performance -->
+<link rel="preconnect" href="<?php echo admin_url(); ?>">
+<link rel="dns-prefetch" href="<?php echo admin_url(); ?>">
+
+<!-- SEO構造化データ（JSON-LD） -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -70,7 +100,49 @@ $breadcrumbs = [
       }<?php echo $index < count($breadcrumbs) - 1 ? ',' : ''; ?>
       <?php endforeach; ?>
     ]
-  }
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "<?php echo esc_js(get_bloginfo('name')); ?>",
+    "url": "<?php echo esc_js(home_url()); ?>"
+  },
+  "inLanguage": "ja-JP",
+  "datePublished": "<?php echo date('c'); ?>",
+  "dateModified": "<?php echo date('c'); ?>"
+}
+</script>
+
+<!-- FAQ構造化データ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "<?php echo esc_js($category_name); ?>の助成金はどのように検索できますか?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "当ページでは<?php echo esc_js($category_name); ?>分野の助成金・補助金を<?php echo intval($category_count); ?>件掲載しています。都道府県、募集状況、助成金額などで絞り込み検索が可能です。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "<?php echo esc_js($category_name); ?>の助成金申請に必要な書類は?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "助成金により異なりますが、一般的に事業計画書、見積書、履歴事項全部証明書、決算書などが必要です。各助成金の詳細ページで必要書類をご確認ください。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "<?php echo $current_year; ?>年度の<?php echo esc_js($category_name); ?>助成金の申請期限は?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "各助成金により申請期限が異なります。当ページの一覧で締切日を確認し、余裕を持って申請準備を進めてください。"
+      }
+    }
+  ]
 }
 </script>
 
@@ -404,6 +476,59 @@ $breadcrumbs = [
     </section>
     <?php endif; ?>
 
+    <!-- 内部リンクセクション -->
+    <section class="internal-links-section">
+        <div class="container">
+            <h2 class="section-title">助成金申請に役立つ情報</h2>
+            <div class="internal-links-grid">
+                <a href="<?php echo home_url('/grant-howto/'); ?>" class="internal-link-card">
+                    <div class="link-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                    </div>
+                    <h3>助成金申請の基礎知識</h3>
+                    <p>初めての方でも分かる申請の流れと準備</p>
+                </a>
+                <a href="<?php echo home_url('/grant-faq/'); ?>" class="internal-link-card">
+                    <div class="link-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                    </div>
+                    <h3>よくある質問</h3>
+                    <p>助成金に関する疑問をQ&amp;A形式で解決</p>
+                </a>
+                <a href="<?php echo home_url('/grant-glossary/'); ?>" class="internal-link-card">
+                    <div class="link-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        </svg>
+                    </div>
+                    <h3>助成金用語集</h3>
+                    <p>専門用語を分かりやすく解説</p>
+                </a>
+                <a href="<?php echo home_url('/grant-success-stories/'); ?>" class="internal-link-card">
+                    <div class="link-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                    </div>
+                    <h3>採択事例</h3>
+                    <p>成功事例から学ぶ申請のコツ</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
     <!-- SEO用追加コンテンツ -->
     <section class="seo-content">
         <div class="container">
@@ -513,7 +638,7 @@ $breadcrumbs = [
 
 /* ===== ヒーローセクション ===== */
 .category-hero {
-    padding: 40px 0 60px;
+    padding: 40px 0 20px;
     background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
     border-bottom: 1px solid #e0e0e0;
 }
@@ -639,7 +764,7 @@ $breadcrumbs = [
 
 /* ===== フィルターセクション ===== */
 .category-filters {
-    padding: 50px 0;
+    padding: 30px 0;
     background: #ffffff;
     border-bottom: 1px solid #e0e0e0;
 }
@@ -1249,8 +1374,111 @@ $breadcrumbs = [
     margin: 0 0 20px 0;
 }
 
+/* ===== 内部リンクセクション ===== */
+.internal-links-section {
+    padding: 60px 0;
+    background: var(--color-gray-50);
+    border-top: 1px solid var(--color-gray-200);
+}
+
+.internal-links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.internal-link-card {
+    background: var(--color-white);
+    border: 2px solid var(--color-gray-200);
+    border-radius: 12px;
+    padding: 24px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-height: 200px;
+}
+
+.internal-link-card:hover {
+    border-color: var(--color-black);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+}
+
+.internal-link-card .link-icon {
+    width: 56px;
+    height: 56px;
+    background: var(--color-black);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-white);
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+}
+
+.internal-link-card:hover .link-icon {
+    background: var(--color-gray-800);
+    transform: scale(1.1);
+}
+
+.internal-link-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-black);
+    margin: 0 0 8px 0;
+}
+
+.internal-link-card p {
+    font-size: 14px;
+    color: var(--color-gray-600);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* ===== アクセシビリティ強化 ===== */
+/* タップターゲットサイズ最適化（モバイル） */
+.prefecture-btn,
+.category-btn,
+.region-tab,
+.view-toggle,
+.search-btn,
+.filter-select {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* フォーカス表示の強化 */
+a:focus,
+button:focus,
+input:focus,
+select:focus {
+    outline: 2px solid var(--color-black);
+    outline-offset: 2px;
+}
+
+/* 画像遅延読み込み対応 */
+img[loading="lazy"] {
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+img[loading="lazy"].loaded {
+    opacity: 1;
+}
+
 /* ===== レスポンシブ対応 ===== */
 @media (max-width: 768px) {
+    .internal-links-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
     .category-title {
         font-size: 32px;
     }

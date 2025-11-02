@@ -3747,22 +3747,20 @@ $region_groups = [
     };
     
     function init() {
-        console.log('🚀 Archive Grant Init Started');
-        console.log('📊 Debug Info:', {
+        // ← この下に追加
+        console.log('🚀 Archive page initialized');
+        console.log('📊 Configuration:', {
             ajaxUrl: AJAX_URL,
             noncePresent: !!NONCE,
             municipalityBarExists: !!elements.municipalityBar,
             municipalityFilterSectionExists: !!elements.municipalityFilterSection,
-            prefectureButtonCount: elements.prefectureBtns.length,
-            categoryButtonCount: elements.categoryBtns.length,
-            grantsContainerExists: !!elements.grantsContainer
+            prefectureButtonCount: elements.prefectureBtns.length
         });
+        // ← ここまで追加
         
         setupEventListeners();
         loadGrants();
         updateScrollButtons();
-        
-        console.log('✅ Archive Grant Init Completed');
     }
     
     function setupEventListeners() {
@@ -3829,23 +3827,12 @@ $region_groups = [
             document.querySelector('.category-buttons-other')
         ];
         
-        console.log('🔘 Setting up category button listeners:', {
-            mainContainer: !!categoryContainers[0],
-            otherContainer: !!categoryContainers[1],
-            totalButtons: elements.categoryBtns.length
-        });
-        
         categoryContainers.forEach(container => {
             if (!container) return;
             
             container.addEventListener('click', function(e) {
-                console.log('👆 Category container clicked', e.target);
                 const btn = e.target.closest('.category-btn');
-                if (!btn) {
-                    console.log('⚠️ Not a category button');
-                    return;
-                }
-                console.log('✅ Category button clicked:', btn.dataset.category);
+                if (!btn) return;
                 
                 const categoryValue = btn.dataset.category;
                 
@@ -3886,22 +3873,12 @@ $region_groups = [
         // Optimized: 47+ individual listeners → 8 delegated listeners (per region)
         const prefectureGroups = document.querySelectorAll('.region-prefecture-group');
         
-        console.log('🗾 Setting up prefecture button listeners:', {
-            groupCount: prefectureGroups.length,
-            totalButtons: elements.prefectureBtns.length
-        });
-        
         prefectureGroups.forEach(group => {
             if (!group) return;
             
             group.addEventListener('click', function(e) {
-                console.log('👆 Prefecture group clicked', e.target);
                 const btn = e.target.closest('.prefecture-btn');
-                if (!btn) {
-                    console.log('⚠️ Not a prefecture button');
-                    return;
-                }
-                console.log('✅ Prefecture button clicked:', btn.dataset.prefecture);
+                if (!btn) return;
                 
                 const prefectureValue = btn.dataset.prefecture;
                 
@@ -4002,6 +3979,7 @@ $region_groups = [
         // 詳細フィルターのリセットボタン
         if (elements.resetFiltersBtn) {
             elements.resetFiltersBtn.addEventListener('click', function() {
+                console.log('🔄 Resetting detailed filters');
                 
                 // 詳細フィルターをリセット
                 if (elements.amountFilter) elements.amountFilter.value = '';
@@ -4016,6 +3994,7 @@ $region_groups = [
                 state.filters.sort = 'date_desc';
                 state.currentPage = 1;
                 
+                console.log('✅ Detailed filters reset completed');
                 loadGrants();
             });
         }
@@ -4208,14 +4187,21 @@ $region_groups = [
     
     // ===== 市町村フィルター機能 =====
     function hideMunicipalityFilter() {
+        console.log('⚠️ Hiding municipality filter (multiple or no prefectures selected)');
         if (elements.municipalityFilterSection) {
             elements.municipalityFilterSection.style.display = 'none';
         }
     }
     
     function loadMunicipalities(prefectureSlug, prefectureName) {
+        console.log('========================================');
+        console.log('🏘️ Loading municipalities');
+        console.log('Prefecture Slug:', prefectureSlug);
+        console.log('Prefecture Name:', prefectureName);
+        console.log('========================================');
         
         if (!prefectureSlug) {
+            console.log('⚠️ No prefecture selected, hiding municipality filter');
             hideMunicipalityFilter();
             return;
         }
@@ -4233,6 +4219,7 @@ $region_groups = [
         formData.append('prefecture_slug', prefectureSlug);
         formData.append('nonce', NONCE);
         
+        console.log('📡 Sending AJAX request:', {
             action: 'gi_get_municipalities_for_prefecture',
             prefecture_slug: prefectureSlug,
             ajax_url: AJAX_URL
@@ -4243,6 +4230,7 @@ $region_groups = [
             body: formData
         })
         .then(response => {
+            console.log('📥 Response received:', {
                 status: response.status,
                 statusText: response.statusText,
                 ok: response.ok
@@ -4255,11 +4243,23 @@ $region_groups = [
             return response.json();
         })
         .then(data => {
+            console.log('📦 Full API Response:', data);
             
             // 詳細なデバッグ情報を出力
+            console.log('🔍 Response Analysis:');
+            console.log('- success:', data.success);
+            console.log('- data exists:', !!data.data);
+            console.log('- data type:', typeof data.data);
+            console.log('- data content:', data.data);
             
             if (data.data) {
+                console.log('- data keys:', Object.keys(data.data));
+                console.log('- municipalities key exists:', 'municipalities' in data.data);
+                console.log('- municipalities type:', typeof data.data.municipalities);
+                console.log('- municipalities is array:', Array.isArray(data.data.municipalities));
                 if (data.data.municipalities) {
+                    console.log('- municipalities length:', data.data.municipalities.length);
+                    console.log('- first 2 items:', data.data.municipalities.slice(0, 2));
                 }
             }
             
@@ -4270,30 +4270,39 @@ $region_groups = [
                 // パターン1: data.data.data.municipalities (ネストした構造)
                 if (data.data && data.data.data && Array.isArray(data.data.data.municipalities)) {
                     municipalities = data.data.data.municipalities;
+                    console.log('✅ Pattern 1: data.data.data.municipalities found (nested structure)');
                 }
                 // パターン2: data.data.municipalities
                 else if (data.data && Array.isArray(data.data.municipalities)) {
                     municipalities = data.data.municipalities;
+                    console.log('✅ Pattern 2: data.data.municipalities found');
                 }
                 // パターン3: data.municipalities  
                 else if (Array.isArray(data.municipalities)) {
                     municipalities = data.municipalities;
+                    console.log('✅ Pattern 3: data.municipalities found');
                 }
                 // パターン4: data.data直下が配列
                 else if (Array.isArray(data.data)) {
                     municipalities = data.data;
+                    console.log('✅ Pattern 4: data.data is array');
                 }
                 // パターン5: dataが直接配列
                 else if (Array.isArray(data)) {
                     municipalities = data;
+                    console.log('✅ Pattern 5: data is array');
                 }
             }
             
+            console.log('🎯 Final municipalities count:', municipalities.length);
             
             if (municipalities.length > 0) {
+                console.log('✅ Municipalities loaded successfully:', municipalities.length, 'items');
+                console.log('📝 First 3 municipalities:', municipalities.slice(0, 3));
                 renderMunicipalityButtons(municipalities);
             } else {
                 console.warn('⚠️ No municipalities found in response');
+                console.log('Full response structure for debugging:', JSON.stringify(data, null, 2));
                 renderMunicipalityButtons([]);
             }
         })
@@ -4309,6 +4318,12 @@ $region_groups = [
     }
     
     function renderMunicipalityButtons(municipalities) {
+        console.log('========================================');
+        console.log('🏗️ Rendering municipality buttons (expandable list)');
+        console.log('Municipalities received:', municipalities);
+        console.log('Count:', municipalities ? municipalities.length : 0);
+        console.log('Municipality buttons main element exists:', !!elements.municipalityButtonsMain);
+        console.log('========================================');
         
         if (!elements.municipalityButtonsMain) {
             console.error('❌ Municipality buttons main element not found');
@@ -4405,6 +4420,7 @@ $region_groups = [
         const btnText = btn.querySelector('.btn-text');
         updateFilterStatus('municipality', btnText ? btnText.textContent.trim() : btn.textContent.trim());
         
+        console.log('✅ Municipality selected:', state.filters.municipality || '(all)');
         
         // 助成金を再読み込み
         loadGrants();
@@ -4431,17 +4447,13 @@ $region_groups = [
             toggleText.textContent = isVisible ? 'その他の市町村を表示' : 'その他の市町村を非表示';
         }
         
+        console.log(`🔄 Other municipalities ${isVisible ? 'hidden' : 'shown'}`);
     }
 
     
     // ===== 助成金データ読み込み =====
     function loadGrants() {
-        console.log('📡 loadGrants called with state:', JSON.parse(JSON.stringify(state)));
-        
-        if (state.isLoading) {
-            console.log('⏳ Already loading, skipping...');
-            return;
-        }
+        if (state.isLoading) return;
         
         state.isLoading = true;
         showLoading(true);
@@ -4470,7 +4482,14 @@ $region_groups = [
             const municipalityArray = [state.filters.municipality];
             formData.append('municipalities', JSON.stringify(municipalityArray));
             
+            console.log('========================================');
+            console.log('📍 Municipality filter applied');
+            console.log('Filter value:', state.filters.municipality);
+            console.log('Sending as array:', municipalityArray);
+            console.log('JSON string:', JSON.stringify(municipalityArray));
+            console.log('========================================');
         } else {
+            console.log('ℹ️ No municipality filter applied');
         }
         
         // 地域フィルターも追加
@@ -4485,16 +4504,19 @@ $region_groups = [
         // ステータスフィルター（配列として送信）
         if (state.filters.status && state.filters.status !== '') {
             formData.append('status', JSON.stringify([state.filters.status]));
+            console.log('📊 Status filter applied:', state.filters.status);
         }
         
         // 難易度フィルター（配列として送信）
         if (state.filters.difficulty && state.filters.difficulty !== '') {
             formData.append('difficulty', JSON.stringify([state.filters.difficulty]));
+            console.log('📊 Difficulty filter applied:', state.filters.difficulty);
         }
         
         formData.append('sort', state.filters.sort);
         
         // 詳細フィルターのデバッグログ
+        console.log('🔍 Detailed Filters Debug:', {
             amount: state.filters.amount,
             status: state.filters.status,
             difficulty: state.filters.difficulty,
@@ -4505,31 +4527,24 @@ $region_groups = [
             method: 'POST',
             body: formData
         })
-        .then(response => {
-            console.log('📥 AJAX Response received:', response.status);
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-            console.log('📦 AJAX Data:', data);
             if (data.success) {
-                console.log('✅ Success - Grants count:', data.data.grants ? data.data.grants.length : 0);
                 displayGrants(data.data.grants);
                 updateStats(data.data.stats);
                 updatePagination(data.data.pagination);
                 updateActiveFilters();
             } else {
-                console.error('❌ AJAX Error:', data.data);
                 showError('データの読み込みに失敗しました。');
             }
         })
         .catch(error => {
-            console.error('💥 Fetch Error:', error);
+            console.error('Fetch Error:', error);
             showError('通信エラーが発生しました。');
         })
         .finally(() => {
             state.isLoading = false;
             showLoading(false);
-            console.log('🏁 loadGrants completed');
         });
     }
     
@@ -4972,11 +4987,13 @@ $region_groups = [
             elements.advancedFilters.style.display = 'none';
             elements.toggleAdvancedBtn.classList.remove('active');
             
+            console.log('📂 Advanced filters closed');
         } else {
             // フィルターを開く
             elements.advancedFilters.style.display = 'block';
             elements.toggleAdvancedBtn.classList.add('active');
             
+            console.log('📂 Advanced filters opened');
         }
     }
     
@@ -5066,51 +5083,6 @@ $region_groups = [
         };
     }
     
-    // Phase 3: Throttle function for scroll/resize events
-    function throttle(func, limit) {
-        let inThrottle;
-        return function(...args) {
-            const context = this;
-            if (!inThrottle) {
-                func.apply(context, args);
-                inThrottle = true;
-                setTimeout(() => inThrottle = false, limit);
-            }
-        };
-    }
-    
-    // Priority 3: Code Deduplication - AJAX Helper Function
-    // 共通のAJAXリクエスト処理をヘルパー関数化
-    function ajaxRequest(action, params = {}, options = {}) {
-        const formData = new FormData();
-        formData.append('action', action);
-        formData.append('nonce', NONCE);
-        
-        // パラメータを追加
-        Object.keys(params).forEach(key => {
-            if (params[key] !== undefined && params[key] !== null) {
-                formData.append(key, params[key]);
-            }
-        });
-        
-        return fetch(AJAX_URL, {
-            method: 'POST',
-            body: formData,
-            ...options
-        }).then(response => {
-            if (!response.ok) {
-                if (response.status === 403) {
-                    throw new Error('セキュリティエラー: ページをリフレッシュしてください');
-                } else if (response.status === 500) {
-                    throw new Error('サーバーエラー: しばらく待ってから再度お試しください');
-                } else {
-                    throw new Error(`HTTPエラー: ${response.status}`);
-                }
-            }
-            return response.json();
-        });
-    }
-    
     function escapeHtml(text) {
         const map = {
             '&': '&amp;',
@@ -5174,6 +5146,7 @@ $region_groups = [
     }
     
     function applyQuickFilter(type, value) {
+        console.log(`Applying quick filter: ${type} = ${value}`);
         
         switch(type) {
             case 'status':
@@ -5213,6 +5186,7 @@ $region_groups = [
     }
     
     function clearQuickFilter(type) {
+        console.log(`Clearing quick filter: ${type}`);
         
         switch(type) {
             case 'status':
@@ -5400,59 +5374,22 @@ $region_groups = [
     }
     
     // ============================================
-    // AI質問機能をアーカイブページに追加 (Lazy Loading)
+    // AI質問機能をアーカイブページに追加
     // ============================================
     
-    // Priority 3: Lazy Loading - AI Module (~15KB)
-    // AI機能を初回クリック時にロードすることで初期Bundle sizeを削減
-    
-    let aiModuleLoaded = false;
-    let aiModuleLoading = false;
-    
-    // AI機能のLazy Loading
-    function loadAIModule() {
-        return new Promise((resolve, reject) => {
-            if (aiModuleLoaded) {
-                resolve();
-                return;
-            }
-            
-            if (aiModuleLoading) {
-                // 既にロード中の場合は待機
-                const checkInterval = setInterval(() => {
-                    if (aiModuleLoaded) {
-                        clearInterval(checkInterval);
-                        resolve();
-                    }
-                }, 100);
-                return;
-            }
-            
-            aiModuleLoading = true;
-            
-            // AI機能を動的に初期化
-            initAIModule();
-            aiModuleLoaded = true;
-            aiModuleLoading = false;
-            resolve();
-        });
+    // HTMLエスケープ関数
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
     
-    // AI機能の初期化 (元のコードを関数化)
-    function initAIModule() {
-        // HTMLエスケープ関数
-        window.escapeHtml = function(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        };
-        
-        // グローバル変数
-        let currentEscHandler = null;
-        
-        // AIチャットモーダル表示関数
-        window.showAIChatModal = function(postId, grantTitle) {
-            const escapeHtml = window.escapeHtml;
+    // グローバル変数
+    let currentEscHandler = null;
+    
+    // AIチャットモーダル表示関数
+    window.showAIChatModal = function(postId, grantTitle) {
+        console.log('📱 Opening AI Chat Modal:', postId, grantTitle);
         
         // 既存のモーダルを削除
         const existingModal = document.querySelector('.grant-ai-modal');
@@ -5585,6 +5522,7 @@ $region_groups = [
         // モーダルをDOMに追加
         document.body.insertAdjacentHTML('beforeend', modalHTML);
         
+        console.log('✅ Modal HTML inserted');
         
         // 入力欄にフォーカス
         setTimeout(() => {
@@ -5605,6 +5543,7 @@ $region_groups = [
     
     // モーダルを閉じる関数
     window.closeAIChatModal = function() {
+        console.log('🚷 Closing AI Chat Modal');
         const modal = document.querySelector('.grant-ai-modal');
         if (modal) {
             modal.style.opacity = '0';
@@ -5614,12 +5553,14 @@ $region_groups = [
                     document.removeEventListener('keydown', currentEscHandler);
                     currentEscHandler = null;
                 }
+                console.log('✅ Modal closed and removed');
             }, 300);
         }
     };
     
     // 質問候補選択関数
     window.selectSuggestion = function(postId, question) {
+        console.log('💡 Selecting suggestion:', question);
         const input = document.getElementById(`ai-chat-input-${postId}`);
         if (input) {
             input.value = question;
@@ -5632,6 +5573,7 @@ $region_groups = [
     
     // AI質問送信関数
     window.sendAIQuestion = function(postId) {
+        console.log('📤 Sending AI question for post:', postId);
         
         const input = document.getElementById(`ai-chat-input-${postId}`);
         const sendBtn = document.getElementById(`ai-chat-send-${postId}`);
@@ -5648,6 +5590,7 @@ $region_groups = [
             return;
         }
         
+        console.log('📝 Question:', question);
         
         // 送信ボタンを無効化
         if (sendBtn) {
@@ -5683,6 +5626,7 @@ $region_groups = [
         // スクロールダウン
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
         
+        console.log('📡 Sending AJAX request...');
         
         // AJAX リクエスト
         const formData = new FormData();
@@ -5696,6 +5640,7 @@ $region_groups = [
             body: formData
         })
         .then(response => {
+            console.log('📥 Response received:', response.status, response.statusText);
             
             if (!response.ok) {
                 if (response.status === 403) {
@@ -5710,6 +5655,7 @@ $region_groups = [
             return response.json();
         })
         .then(data => {
+            console.log('📦 Response data:', data);
             
             // ローディング表示を追加
             const loadingMessage = document.createElement('div');
@@ -5744,6 +5690,7 @@ $region_groups = [
                 loadingMessage.remove();
                 
                 if (data.success) {
+                    console.log('✅ Success response');
                     const assistantMessage = document.createElement('div');
                     assistantMessage.className = 'grant-ai-message grant-ai-message--assistant';
                     assistantMessage.style.cssText = 'display: flex; gap: 10px; max-width: 85%; align-self: flex-start;';
@@ -5835,73 +5782,45 @@ $region_groups = [
                 sendBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
             }
             input.focus();
+            console.log('✅ Request completed');
         });
     };
-
     
-        // CSSアニメーションを追加
-        const aiStyles = document.createElement('style');
-        aiStyles.innerHTML = `
-            @keyframes fadeIn {
-                to { opacity: 1; }
-            }
-            @keyframes slideUp {
-                from {
-                    opacity: 0;
-                    transform: translateY(30px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-            @keyframes typing {
-                0%, 80%, 100% { 
-                    transform: scale(0.8); 
-                    opacity: 0.5; 
-                }
-                40% { 
-                    transform: scale(1); 
-                    opacity: 1; 
-                }
-            }
-        `;
-        document.head.appendChild(aiStyles);
-    }
-    
-    // AIボタンのクリックハンドラ (Lazy Loading対応)
-    // Priority 3: Code Deduplication - 複数のAIボタンセレクターを統合
+    // AIボタンにイベントリスナーを追加
     function setupAIButtonListeners() {
-        // 複数のAIボタンクラスに対応
-        const aiButtons = document.querySelectorAll('.grant-ai-trigger-btn, .grant-btn-compact--ai');
+        console.log('🔧 Setting up AI button listeners...');
+        const aiButtons = document.querySelectorAll('.grant-btn-compact--ai');
+        console.log(`📊 Found ${aiButtons.length} AI buttons`);
         
-        aiButtons.forEach(btn => {
-            // 既存のリスナーを削除
-            const clone = btn.cloneNode(true);
-            if (btn.parentNode) {
-                btn.parentNode.replaceChild(clone, btn);
-            }
+        aiButtons.forEach((btn, index) => {
+            // 既存のリスナーを削除して重複を防止
+            btn.removeEventListener('click', handleAIButtonClick);
+            btn.addEventListener('click', handleAIButtonClick);
             
-            // 新しいリスナーを追加
-            clone.addEventListener('click', handleAIButtonClick);
+            const postId = btn.getAttribute('data-post-id');
+            const title = btn.getAttribute('data-grant-title');
+            console.log(`✅ Button ${index + 1}: postId=${postId}, title="${title}"`);
         });
+        
+        console.log('🎯 AI button listeners setup completed');
     }
     
     function handleAIButtonClick(e) {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
+        console.log('🚀 AI Button clicked via event listener!');
         
         const postId = this.getAttribute('data-post-id');
         const title = this.getAttribute('data-grant-title');
         
+        console.log('📋 Data attributes:', { postId, title });
+        
         if (postId && title) {
-            // AI機能をLazy Load
-            loadAIModule().then(() => {
-                if (window.showAIChatModal) {
-                    window.showAIChatModal(postId, title);
-                }
-            });
+            console.log('🎪 Opening AI modal...');
+            showAIChatModal(postId, title);
+        } else {
+            console.error('❌ Missing data attributes:', { postId, title });
         }
     }
     
@@ -5941,15 +5860,39 @@ $region_groups = [
         setTimeout(setupAIButtonListeners, 100);
     };
     
+    // CSSアニメーションを追加
+    const aiStyles = document.createElement('style');
+    aiStyles.innerHTML = `
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes typing {
+            0%, 80%, 100% { 
+                transform: scale(0.8); 
+                opacity: 0.5; 
+            }
+            40% { 
+                transform: scale(1); 
+                opacity: 1; 
+            }
+        }
+    `;
+    document.head.appendChild(aiStyles);
+    
     
     // ============================================
     // 初期化処理の継続
     // ============================================
-    
-    // Phase 3: Code Splitting Marker
-    // Current: All features loaded immediately (~85KB)
-    // Future optimization: Split into critical.js (~35KB) + non-critical.js (~50KB)
-    // Non-critical: AI search, advanced analytics, detailed municipality data
     
     // 初期化処理
     if (document.readyState === 'loading') {
@@ -5988,6 +5931,7 @@ $region_groups = [
         initFAQAccordion();
     }
 
+    console.log('✅ Archive page script loaded successfully with SEO enhancements');
 })();
 </script>
 
